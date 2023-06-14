@@ -11,7 +11,7 @@ public partial class ProgressReport
 
     public string? Content { get; set; }
 
-    public DateTime? ReportTime { get; set; }
+    public DateTime ReportTime { get; set; }
 
     public int StudentId { get; set; }
 

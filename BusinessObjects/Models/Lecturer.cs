@@ -18,4 +18,6 @@ public partial class Lecturer
     public virtual ICollection<Class> Classes { get; set; } = new List<Class>();
 
     public virtual ICollection<Meeting> Meetings { get; set; } = new List<Meeting>();
+
+    public virtual ICollection<Project> Projects { get; set; } = new List<Project>();
 }

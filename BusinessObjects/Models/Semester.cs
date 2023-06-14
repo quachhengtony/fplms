@@ -3,13 +3,13 @@ using System.Collections.Generic;
 
 namespace BusinessObjects.Models;
 
-public partial class Subject
+public partial class Semester
 {
-    public int Id { get; set; }
+    public string Code { get; set; } = null!;
 
-    public string Name { get; set; } = null!;
+    public DateTime? StartDate { get; set; }
 
-    public sbyte? IsDisable { get; set; }
+    public DateTime? EndDate { get; set; }
 
     public virtual ICollection<Class> Classes { get; set; } = new List<Class>();
 

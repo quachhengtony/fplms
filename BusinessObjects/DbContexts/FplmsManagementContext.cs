@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using BusinessObjects.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace BusinessObjects.Models;
+namespace BusinessObjects.DbContexts;
 
 public partial class FplmsManagementContext : DbContext
 {
@@ -29,6 +30,8 @@ public partial class FplmsManagementContext : DbContext
 
     public virtual DbSet<Project> Projects { get; set; }
 
+    public virtual DbSet<Semester> Semesters { get; set; }
+
     public virtual DbSet<Student> Students { get; set; }
 
     public virtual DbSet<StudentGroup> StudentGroups { get; set; }
@@ -51,7 +54,10 @@ public partial class FplmsManagementContext : DbContext
 
             entity.HasIndex(e => e.SubjectId, "fk_CLASS_SUBJECT1_idx");
 
+            entity.HasIndex(e => e.SemesterCode, "fk_class_SEMESTER1_idx");
+
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.CycleDuration).HasColumnName("cycle_duration");
             entity.Property(e => e.EnrollKey)
                 .HasMaxLength(45)
                 .HasColumnName("enroll_key");
@@ -62,15 +68,20 @@ public partial class FplmsManagementContext : DbContext
             entity.Property(e => e.Name)
                 .HasMaxLength(45)
                 .HasColumnName("name");
-            entity.Property(e => e.Semester)
-                .HasMaxLength(45)
-                .HasColumnName("semester");
+            entity.Property(e => e.SemesterCode)
+                .HasMaxLength(10)
+                .HasColumnName("SEMESTER_code");
             entity.Property(e => e.SubjectId).HasColumnName("SUBJECT_id");
 
             entity.HasOne(d => d.Lecturer).WithMany(p => p.Classes)
                 .HasForeignKey(d => d.LecturerId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_CLASS_LECTURER1");
+
+            entity.HasOne(d => d.SemesterCodeNavigation).WithMany(p => p.Classes)
+                .HasForeignKey(d => d.SemesterCode)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_class_SEMESTER1");
 
             entity.HasOne(d => d.Subject).WithMany(p => p.Classes)
                 .HasForeignKey(d => d.SubjectId)
@@ -90,13 +101,12 @@ public partial class FplmsManagementContext : DbContext
             entity.Property(e => e.Content)
                 .HasColumnType("text")
                 .HasColumnName("content");
+            entity.Property(e => e.CycleNumber).HasColumnName("cycle_number");
             entity.Property(e => e.Feedback)
                 .HasColumnType("text")
                 .HasColumnName("feedback");
             entity.Property(e => e.GroupId).HasColumnName("GROUP_id");
-            entity.Property(e => e.ReportTime)
-                .HasColumnType("timestamp")
-                .HasColumnName("report_time");
+            entity.Property(e => e.Mark).HasColumnName("mark");
             entity.Property(e => e.ResourceLink)
                 .HasColumnType("text")
                 .HasColumnName("resource_link");
@@ -125,6 +135,9 @@ public partial class FplmsManagementContext : DbContext
             entity.Property(e => e.EnrollTime)
                 .HasColumnType("timestamp")
                 .HasColumnName("enroll_time");
+            entity.Property(e => e.IsDisable)
+                .HasDefaultValueSql("'0'")
+                .HasColumnName("is_disable");
             entity.Property(e => e.MemberQuantity).HasColumnName("member_quantity");
             entity.Property(e => e.Number).HasColumnName("number");
             entity.Property(e => e.ProjectId).HasColumnName("PROJECT_id");
@@ -133,6 +146,10 @@ public partial class FplmsManagementContext : DbContext
                 .HasForeignKey(d => d.ClassId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_GROUP_CLASS1");
+
+            entity.HasOne(d => d.Project).WithMany(p => p.Groups)
+                .HasForeignKey(d => d.ProjectId)
+                .HasConstraintName("fk_GROUP_PROJECT1");
         });
 
         modelBuilder.Entity<Lecturer>(entity =>
@@ -165,6 +182,8 @@ public partial class FplmsManagementContext : DbContext
             entity.HasIndex(e => e.GroupId, "fk_MEETING_GROUP1_idx");
 
             entity.HasIndex(e => e.LecturerId, "fk_MEETING_LECTURER1_idx");
+
+            entity.HasIndex(e => e.Id, "id_UNIQUE").IsUnique();
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Feedback)
@@ -209,6 +228,8 @@ public partial class FplmsManagementContext : DbContext
                 .HasColumnName("content");
             entity.Property(e => e.GroupId).HasColumnName("GROUP_id");
             entity.Property(e => e.ReportTime)
+                .ValueGeneratedOnAddOrUpdate()
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp")
                 .HasColumnName("report_time");
             entity.Property(e => e.StudentId).HasColumnName("STUDENT_id");
@@ -229,16 +250,17 @@ public partial class FplmsManagementContext : DbContext
 
         modelBuilder.Entity<Project>(entity =>
         {
-            entity.HasKey(e => new { e.Id, e.SubjectId }).HasName("PRIMARY");
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
 
             entity.ToTable("project");
 
             entity.HasIndex(e => e.SubjectId, "fk_PROJECT_SUBJECT1_idx");
 
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("id");
-            entity.Property(e => e.SubjectId).HasColumnName("SUBJECT_id");
+            entity.HasIndex(e => e.LecturerId, "fk_project_lecturer1_idx");
+
+            entity.HasIndex(e => e.SemesterCode, "fk_project_semester1_idx");
+
+            entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Actors)
                 .HasColumnType("text")
                 .HasColumnName("actors");
@@ -256,14 +278,44 @@ public partial class FplmsManagementContext : DbContext
             entity.Property(e => e.Requirements)
                 .HasColumnType("text")
                 .HasColumnName("requirements");
+            entity.Property(e => e.SemesterCode)
+                .HasMaxLength(10)
+                .HasColumnName("SEMESTER_code");
+            entity.Property(e => e.SubjectId).HasColumnName("SUBJECT_id");
             entity.Property(e => e.Theme)
                 .HasColumnType("text")
                 .HasColumnName("theme");
 
+            entity.HasOne(d => d.Lecturer).WithMany(p => p.Projects)
+                .HasForeignKey(d => d.LecturerId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_project_lecturer1");
+
+            entity.HasOne(d => d.SemesterCodeNavigation).WithMany(p => p.Projects)
+                .HasForeignKey(d => d.SemesterCode)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_project_semester1");
+
             entity.HasOne(d => d.Subject).WithMany(p => p.Projects)
                 .HasForeignKey(d => d.SubjectId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_PROJECT_SUBJECT1");
+        });
+
+        modelBuilder.Entity<Semester>(entity =>
+        {
+            entity.HasKey(e => e.Code).HasName("PRIMARY");
+
+            entity.ToTable("semester");
+
+            entity.Property(e => e.Code)
+                .HasMaxLength(10)
+                .HasColumnName("code");
+            entity.Property(e => e.EndDate)
+                .HasColumnType("date")
+                .HasColumnName("end_date");
+            entity.Property(e => e.StartDate)
+                .HasColumnType("date")
+                .HasColumnName("start_date");
         });
 
         modelBuilder.Entity<Student>(entity =>
@@ -351,9 +403,8 @@ public partial class FplmsManagementContext : DbContext
 
             entity.ToTable("subject");
 
-            entity.HasIndex(e => e.Name, "name_UNIQUE").IsUnique();
-
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.IsDisable).HasColumnName("is_disable");
             entity.Property(e => e.Name)
                 .HasMaxLength(45)
                 .HasColumnName("name");

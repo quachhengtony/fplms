@@ -17,6 +17,8 @@ public partial class Group
 
     public int ClassId { get; set; }
 
+    public sbyte? IsDisable { get; set; }
+
     public virtual Class Class { get; set; } = null!;
 
     public virtual ICollection<CycleReport> CycleReports { get; set; } = new List<CycleReport>();
@@ -24,6 +26,8 @@ public partial class Group
     public virtual ICollection<Meeting> Meetings { get; set; } = new List<Meeting>();
 
     public virtual ICollection<ProgressReport> ProgressReports { get; set; } = new List<ProgressReport>();
+
+    public virtual Project? Project { get; set; }
 
     public virtual ICollection<StudentGroup> StudentGroups { get; set; } = new List<StudentGroup>();
 }
