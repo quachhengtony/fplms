@@ -13,8 +13,8 @@ namespace Repositories.Interfaces
 
         public Task<int> ExistsByIdAndGroupIdAsync(int groupId, int reportId);
 
-        public Task<bool> existsByGroupAndCycleNumberAsync(Group group, int cycleNumber);
+        public Task<int> ExistsByGroupAndCycleNumberAsync(Group group, int cycleNumber);
 
-        public Task AddFeedbackAsync(int reportId, string feedback, float mark);
+        public Task<int> AddFeedbackAsync(int reportId, string feedback, float mark);
     }
 }

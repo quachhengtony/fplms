@@ -9,7 +9,7 @@ namespace Repositories.Interfaces
 {
     public interface ILecturerRepository
     {
-        public Task<bool> ExistsByEmailAsync(string lecturerEmail);
+        public Task<int> ExistsByEmailAsync(string lecturerEmail);
 
         public Task<Lecturer> FindOneByEmailAsync(string lecturerEmail);
 
