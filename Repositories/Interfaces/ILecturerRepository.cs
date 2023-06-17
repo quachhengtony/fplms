@@ -14,5 +14,7 @@ namespace Repositories.Interfaces
         public Task<Lecturer> FindOneByEmailAsync(string lecturerEmail);
 
         public Task<int> FindLecturerIdByEmailAsync(string lecturerEmail);
+
+        public Task SaveLecturerAsync(Lecturer lecturer);
     }
 }

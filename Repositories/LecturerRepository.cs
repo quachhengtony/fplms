@@ -47,5 +47,11 @@ namespace Repositories
         {
             return dbContext.Lecturers.Where(l => l.Email == lecturerEmail).FirstOrDefaultAsync();
         }
+
+        public Task SaveLecturerAsync(Lecturer lecturer)
+        {
+            dbContext.Lecturers.Add(lecturer);
+            return dbContext.SaveChangesAsync();
+        }
     }
 }
