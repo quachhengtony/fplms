@@ -1,10 +1,9 @@
 namespace FPLMS.Api.Controllers;
 
-using System;
-using System.Text.Json;
 using System.Threading.Tasks;
 using FPLMS.Api.Dto;
 using FPLMS.Api.Enum;
+using FPLMS.Api.Filters;
 using FPLMS.Api.Services;
 using Google.Apis.Auth;
 using Microsoft.AspNetCore.Mvc;
@@ -27,8 +26,10 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
+    [ServiceFilter(typeof(ValidationFilterAttribute))]
     public async Task<IActionResult> Login([FromBody] LoginRequestDto loginRequestDto)
     {
+        if (!ModelState.IsValid) return UnprocessableEntity(ModelState);
         try
         {
             var tokenPayload = await _authService.ValidateGoogleToken(loginRequestDto);
