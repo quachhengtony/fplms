@@ -25,6 +25,20 @@ public class ExceptionMiddleware
         try
         {
             await _next(httpContext);
+
+            switch (httpContext.Response.StatusCode)
+            {
+                case ((int)HttpStatusCode.Unauthorized):
+                    httpContext.Response.ContentType = "application/json";
+                    await httpContext.Response.WriteAsJsonAsync(new ErrorBase { Message = "Unauthorized: Access is denied due to invalid credentials or authentication failure.", StatusCode = (int)HttpStatusCode.Unauthorized });
+                    break;
+                case ((int)HttpStatusCode.Forbidden):
+                    httpContext.Response.ContentType = "application/json";
+                    await httpContext.Response.WriteAsJsonAsync(new ErrorBase { Message = "Forbidden: Access is denied due to insufficient privileges.", StatusCode = (int)HttpStatusCode.Forbidden });
+                    break;
+                default:
+                    break;
+            }
         }
         catch (Exception ex)
         {

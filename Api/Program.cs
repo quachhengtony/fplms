@@ -24,17 +24,17 @@ builder.Services.AddHttpLogging(options =>
 {
     options.LoggingFields = HttpLoggingFields.All;
 });
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("Token:Secret").Value)),
-            ValidateIssuer = false,
-            ValidateAudience = false
-        };
-    });
+// builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+//     .AddJwtBearer(options =>
+//     {
+//         options.TokenValidationParameters = new TokenValidationParameters
+//         {
+//             ValidateIssuerSigningKey = true,
+//             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("Token:Secret").Value)),
+//             ValidateIssuer = false,
+//             ValidateAudience = false
+//         };
+//     });
 // builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 //     .AddJwtBearer(options =>
 //     {
@@ -76,7 +76,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 //         }
 //     };
 // });
-
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddScheme<JwtBearerOptions, CustomJwtBearerHandler>(JwtBearerDefaults.AuthenticationScheme, options => { });
 builder.Services.AddCors(options => options.AddPolicy(name: "FPLMS-Web",
     policy =>
     {
