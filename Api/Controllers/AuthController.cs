@@ -1,11 +1,15 @@
 namespace FPLMS.Api.Controllers;
 
+using System.Linq;
 using System.Threading.Tasks;
 using FPLMS.Api.Dto;
 using FPLMS.Api.Enum;
 using FPLMS.Api.Filters;
+using FPLMS.Api.Models;
 using FPLMS.Api.Services;
 using Google.Apis.Auth;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -29,9 +33,9 @@ public class AuthController : ControllerBase
     [ServiceFilter(typeof(ValidationFilterAttribute))]
     public async Task<IActionResult> Login([FromBody] LoginRequestDto loginRequestDto)
     {
-        if (!ModelState.IsValid) return UnprocessableEntity(ModelState);
         try
         {
+            if (!ModelState.IsValid) return UnprocessableEntity(ModelState);
             var tokenPayload = await _authService.ValidateGoogleToken(loginRequestDto);
             if (!tokenPayload.Email.Contains(_config["EmailFormat:Student"]) && !tokenPayload.Email.Contains(_config["EmailFormat:Lecturer"]))
             {
@@ -55,7 +59,11 @@ public class AuthController : ControllerBase
         }
         catch (InvalidJwtException)
         {
-            return BadRequest($"Invalid credentials.");
+            return BadRequest(new ErrorBase
+            {
+                Message = "Bad credentials.",
+                StatusCode = StatusCodes.Status400BadRequest
+            });
         }
     }
 }

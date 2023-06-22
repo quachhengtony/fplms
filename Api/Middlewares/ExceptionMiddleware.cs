@@ -4,8 +4,10 @@ using System;
 using System.Net;
 using System.Threading.Tasks;
 using FPLMS.Api.Models;
+using Google.Apis.Auth;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 
 public class ExceptionMiddleware
 {
@@ -31,14 +33,20 @@ public class ExceptionMiddleware
         }
     }
 
-    public async Task HandleExceptionAsync(HttpContext httpContext, Exception exception)
+    private async Task HandleExceptionAsync(HttpContext httpContext, Exception exception)
     {
         httpContext.Response.ContentType = "application/json";
         httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+        string message = exception switch
+        {
+            SecurityTokenException => "Bad token.",
+            _ => "Internal server error."
+        };
+
         await httpContext.Response.WriteAsync(new ErrorBase
         {
             StatusCode = httpContext.Response.StatusCode,
-            Message = "Internal server error"
+            Message = message
         }.ToString());
     }
 }

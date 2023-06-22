@@ -10,12 +10,15 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
+using Microsoft.AspNetCore.Http;
+using FPLMS.Api.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IClassService, ClassService>();
 builder.Services.AddScoped<ValidationFilterAttribute>();
 builder.Services.AddHttpLogging(options =>
 {
@@ -24,7 +27,7 @@ builder.Services.AddHttpLogging(options =>
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+        options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("Token:Secret").Value)),
@@ -32,6 +35,48 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = false
         };
     });
+// builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+//     .AddJwtBearer(options =>
+//     {
+//         options.TokenValidationParameters = new TokenValidationParameters
+//         {
+//             ValidateIssuerSigningKey = true,
+//             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("Token:Secret").Value)),
+//             ValidateIssuer = false,
+//             ValidateAudience = false
+//         };
+//         // options.Events = new JwtBearerEvents
+//         // {
+//         //     OnChallenge = context =>
+//         //     {
+//         //         // Skip the default logic.
+//         //         context.HandleResponse();
+//         //         return context.Response.WriteAsync(new ErrorBase
+//         //         {
+//         //             Message = context.ErrorDescription,
+//         //             StatusCode = 500,
+//         //         }.ToString());
+//         //     }
+//         // };
+//     });
+// builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddScheme<JwtBearerOptions, CustomJwtBearerHandler>(JwtBearerDefaults.AuthenticationScheme, options =>
+// {
+//     options.IncludeErrorDetails = true;
+//     options.Events = new JwtBearerEvents
+//     {
+//         OnChallenge = context =>
+//         {
+//             // Skip the default logic.
+//             context.HandleResponse();
+//             return context.Response.WriteAsync(new ErrorBase
+//             {
+//                 Message = context.ErrorDescription,
+//                 StatusCode = 500,
+//             }.ToString());
+//         }
+//     };
+// });
+
 builder.Services.AddCors(options => options.AddPolicy(name: "FPLMS-Web",
     policy =>
     {
@@ -70,6 +115,8 @@ app.ConfigureExceptionMiddleware();
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
+
+app.UseMiddleware<TokenInterceptor>();
 
 app.UseAuthorization();
 
