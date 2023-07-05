@@ -5,16 +5,15 @@ using Repositories.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Repositories
 {
-    public class ProjectRepository :IProjectRepository
+    public class ProjectRepository : IProjectRepository
     {
-        private static ProjectRepository? instance;
+        private static ProjectRepository instance;
         private static readonly object instanceLock = new object();
-        private static FplmsManagementContext? dbContext;
+        private static FplmsManagementContext dbContext;
 
         public static ProjectRepository Instance
         {
@@ -42,23 +41,29 @@ namespace Repositories
 
         public async Task<HashSet<Project>> FindBySubjectIdAndLecturerIdAndSemester(int subjectId, int lecturerId, string semesterCode)
         {
-            return await dbContext.Projects
+            var projects = await dbContext.Projects
                 .FromSqlRaw("SELECT * FROM PROJECT WHERE SUBJECT_id = {0} AND LECTURER_id = {1} AND SEMESTER_code = {2} AND is_disable = 0", subjectId, lecturerId, semesterCode)
-                .ToHashSetAsync();
+                .ToListAsync();
+
+            return projects.ToHashSet();
         }
 
         public async Task<HashSet<Project>> FindByLecturerIdAndSemester(int lecturerId, string semesterCode)
         {
-            return await dbContext.Projects
+            var projects = await dbContext.Projects
                 .FromSqlRaw("SELECT * FROM PROJECT WHERE LECTURER_id = {0} AND SEMESTER_code = {1} AND is_disable = 0", lecturerId, semesterCode)
-                .ToHashSetAsync();
+                .ToListAsync();
+
+            return projects.ToHashSet();
         }
 
         public async Task<HashSet<Project>> FindByLecturerId(int lecturerId)
         {
-            return await dbContext.Projects
+            var projects = await dbContext.Projects
                 .FromSqlRaw("SELECT * FROM PROJECT WHERE LECTURER_id = {0} AND is_disable = 0", lecturerId)
-                .ToHashSetAsync();
+                .ToListAsync();
+
+            return projects.ToHashSet();
         }
 
         public async Task DeleteProject(int projectId)

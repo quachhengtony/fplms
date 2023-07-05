@@ -1,5 +1,6 @@
 ﻿using BusinessObjects.DbContexts;
 using BusinessObjects.Models;
+using Microsoft.EntityFrameworkCore;
 using Repositories.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -38,7 +39,7 @@ namespace Repositories
 
         public async Task<Subject> FindByName(string subjectName)
         {
-            return await dbContext.Subjects.AnyAsync(s => s.Name == subjectName).FirstOrDefaultAsync();
+            return await dbContext.Subjects.FirstOrDefaultAsync(s => s.Name == subjectName);
         }
     }
 }

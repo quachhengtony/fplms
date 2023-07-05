@@ -40,7 +40,8 @@ namespace Repositories
 
         public async Task<int> FindStudentIdByEmail(string email)
         {
-            return await dbContext.Students.AnyAsync(s => s.Email == email).Select(s => s.Id).FirstOrDefaultAsync();
+            var student = await dbContext.Students.FirstOrDefaultAsync(s => s.Email == email);
+            return student?.Id ?? 0;
         }
 
         public async Task<Student> FindOneById(int studentId)
