@@ -1,5 +1,6 @@
 ﻿using BusinessObjects.DbContexts;
 using BusinessObjects.Models;
+using Microsoft.EntityFrameworkCore;
 using Repositories.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -32,9 +33,10 @@ namespace Repositories
         }
         public async Task<HashSet<ProgressReport>> FindByGroup(Group group)
         {
-            return await dbContext.ProgressReports
+            var reports = await dbContext.ProgressReports
                 .Where(pr => pr.Group == group)
-                .ToSetAsync();
+                .ToListAsync();
+            return reports.ToHashSet();
         }
 
 
@@ -56,9 +58,10 @@ namespace Repositories
 
         public async Task<HashSet<ProgressReport>> FindByGroupIdAndTimeFilter(int groupId, DateTime startDate, DateTime endDate)
         {
-            return await dbContext.ProgressReports
+            var reports  = await dbContext.ProgressReports
                 .Where(pr => pr.GroupId == groupId && pr.ReportTime >= startDate && pr.ReportTime <= endDate)
-                .ToSetAsync();
+                .ToListAsync();
+            return reports.ToHashSet();
         }
 
         public async Task<DateTime> GetDateOfProgressReport(int reportId)

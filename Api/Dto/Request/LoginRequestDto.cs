@@ -1,4 +1,4 @@
-namespace FPLMS.Api.Dto;
+namespace FPLMS.Api.Dto
 
 public record LoginRequestDto
 {
