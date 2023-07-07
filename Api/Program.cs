@@ -13,8 +13,7 @@ using Swashbuckle.AspNetCore.Filters;
 using Microsoft.AspNetCore.Http;
 using FPLMS.Api.Models;
 using Api.Services.Subjects;
-using Repositories.Interfaces;
-using Repositories;
+using Api.Services.Students;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +22,7 @@ builder.Services.AddRouting(options => options.LowercaseUrls = true);
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IClassService, ClassService>();
 builder.Services.AddScoped<ISubjectService, SubjectService>();
+builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<ValidationFilterAttribute>();
 builder.Services.AddHttpLogging(options =>
 {

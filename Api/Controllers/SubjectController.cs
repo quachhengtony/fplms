@@ -18,26 +18,13 @@ using Microsoft.Extensions.Logging;
 public class SubjectController : ControllerBase
 {
     private readonly ISubjectService _subjectService;
-    private readonly ILogger<ClassController> _logger;
+    private readonly ILogger<SubjectController> _logger;
 
-    public SubjectController(ISubjectService subjectService, ILogger<ClassController> logger)
+    public SubjectController(ISubjectService subjectService, ILogger<SubjectController> logger)
     {
         _subjectService = subjectService;
         _logger = logger;
     }
-	/*
-    [HttpPost, Authorize(Roles = "Lecturer")]
-    public async Task<ActionResult<ResponseDto<int>>> CreateClassByLecturer([FromBody] ClassRequestResponseDto classDto)
-    {
-        string userEmail = (string)HttpContext.Items["userEmail"];
-        var responseDto = new ResponseDto<int>
-        {
-            code = StatusCodes.Status200OK,
-            data = 1,
-            message = userEmail ?? "none"
-        };
-        return Ok(responseDto);
-    }*/
 
 	[HttpGet]
 	public Task<ResponseDto<HashSet<SubjectDto>>> GetSubjects()
