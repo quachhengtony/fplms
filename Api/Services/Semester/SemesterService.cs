@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+﻿/*using Microsoft.Extensions.Logging;
 using Repositories;
 using Repositories.Interfaces;
 using System;
@@ -128,3 +128,4 @@ namespace Api.Services.Semester
         }
     }
 }
+*/

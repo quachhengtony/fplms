@@ -11,6 +11,12 @@ namespace Repositories.Interfaces
     public interface ISubjectRepository
     {
         Task<bool> ExistsByName(string name);
+        Task<bool> ExistsById(int id);
         Task<Subject> FindByName(string subjectName);
+        Task<Subject> FindById(int id);
+        Task<List<Subject>> FindAll();
+        Task Save(Subject subject);
+        Task Delete(Subject subject);
+        Task Update(Subject subject);
     }
 }

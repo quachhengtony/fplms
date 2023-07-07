@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Repositories.Interfaces
 {
-    internal interface ISemesterRepository
+    public interface ISemesterRepository
     {
         public Task<HashSet<Semester>> GetSemester(String code);
 
