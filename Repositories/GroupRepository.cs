@@ -69,6 +69,7 @@ namespace Repositories
                 .Include(g => g.Meetings)
                 .Include(g => g.CycleReports)
                 .Include(g => g.ProgressReports)
+                .Include(g => g.StudentGroups).ThenInclude(sg => sg.Student)
                 .FirstOrDefaultAsync();
         }
 
@@ -82,6 +83,7 @@ namespace Repositories
         public Task<int> GetMaxGroupNumberAsync(int classId)
         {
             return dbContext.Groups.Where(g => g.ClassId == classId)
+                .DefaultIfEmpty()
                 .MaxAsync(g => g.Number ?? 0 );
         }
 
@@ -101,7 +103,7 @@ namespace Repositories
 
         public Task<int> IsGroupExistsInClassAsync(int groupId, int classId)
         {
-            return dbContext.Groups.Where(g => g.Id == groupId && g.ClassId == classId && g.IsDisable == 0)
+            return dbContext.Groups.Where(g => g.Id == groupId && g.ClassId == classId)
                 .Select(g => g.Id)
                 .FirstOrDefaultAsync();
         }
@@ -119,6 +121,27 @@ namespace Repositories
         public Task<int> UpdateProjectInGroupAsync(int groupId, int projectId)
         {
             return dbContext.Database.ExecuteSqlRawAsync($"update `group` set PROJECT_id = {projectId} where id = {groupId}");
+        }
+
+        public async Task Add(Group group)
+        {
+            dbContext.Groups.Add(group);
+            dbContext.SaveChanges();
+            return;
+        }
+
+        public async Task Update(Group group)
+        {
+            dbContext.Groups.Update(group);
+            dbContext.SaveChanges();
+            return;
+        }
+
+        public async Task Delete(Group group)
+        {
+            dbContext.Groups.Remove(group);
+            dbContext.SaveChanges();
+            return;
         }
     }
 }

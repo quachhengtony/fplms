@@ -8,9 +8,10 @@ using System.Threading.Tasks;
 
 namespace Repositories.Interfaces
 {
-    internal interface IProjectRepository
+    public interface IProjectRepository
     {
         Task<int> ExistsByLecturerId(int lecturerId, int projectId);
+        Task<int> ExistsById(int projectId);
         Task<HashSet<Project>> FindBySubjectIdAndLecturerIdAndSemester(int subjectId, int lecturerId, string semesterCode);
         Task<HashSet<Project>> FindByLecturerIdAndSemester(int lecturerId, string semesterCode);
         Task<HashSet<Project>> FindByLecturerId(int lecturerId);

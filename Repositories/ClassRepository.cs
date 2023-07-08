@@ -72,7 +72,7 @@ namespace Repositories
         public Task<Class> FindOneByIdAsync(int classId)
         {
             return dbContext.Classes.Where(c => c.Id == classId && c.IsDisable == 0)
-                .Include(c => c.Groups)
+                .Include(c => c.Groups).ThenInclude(g => g.Project)
                 .Include(c => c.Lecturer)
                 .Include(c => c.Students)
                 .Include(c => c.SemesterCodeNavigation)
