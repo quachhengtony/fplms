@@ -11,10 +11,10 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using Microsoft.AspNetCore.Http;
-using FPLMS.Api.Models;
 using Api.Services.Subjects;
 using Api.Services.Students;
 using Api.Services.Groups;
+using Api.Services.Classes;
 
 var builder = WebApplication.CreateBuilder(args);
 

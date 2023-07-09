@@ -35,7 +35,7 @@ namespace Repositories
 
         public async Task<Group> FindGroupByStudentIdAndClassId(int studentId, int classId)
         {
-            return await dbContext.Groups.FromSqlRaw("SELECT * FROM `GROUP` WHERE id = (SELECT GROUP_id FROM STUDENT_GROUP WHERE STUDENT_id = {0} AND CLASS_id = {1})", studentId, classId).FirstOrDefaultAsync();
+            return await dbContext.Groups.FromSqlRaw("SELECT * FROM `group` WHERE id = (SELECT GROUP_id FROM student_group WHERE STUDENT_id = {0} AND CLASS_id = {1})", studentId, classId).FirstOrDefaultAsync();
         }
 
         public async Task<int> FindStudentIdByEmail(string email)

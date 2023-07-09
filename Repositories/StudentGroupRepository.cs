@@ -48,7 +48,7 @@ namespace Repositories
 
         public async Task UpdateStudentGroup(int studentId, int classId, int groupNumber)
         {
-            await dbContext.Database.ExecuteSqlRawAsync("UPDATE student_group SET GROUP_id = (SELECT id FROM [group] WHERE CLASS_id = {0} AND number = {1}) WHERE STUDENT_id = {2} AND CLASS_id = {0}", classId, groupNumber, studentId);
+            await dbContext.Database.ExecuteSqlRawAsync("UPDATE `student_group` SET GROUP_id = (SELECT id FROM `group` WHERE CLASS_id = {0} AND number = {1}) WHERE STUDENT_id = {2} AND CLASS_id = {0}", classId, groupNumber, studentId);
         }
 
         public async Task<int> GetCurrentNumberOfMemberInGroup(int groupId)

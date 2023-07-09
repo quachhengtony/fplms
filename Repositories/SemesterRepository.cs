@@ -47,5 +47,10 @@ namespace Repositories
         {
             return (DateTime)await dbContext.Semesters.Where(s => s.Code == code).Select(s => s.StartDate).FirstOrDefaultAsync();
         }
+
+        public async Task<bool> ExistsById(string code)
+        {
+            return await dbContext.Semesters.AnyAsync(s => s.Code == code);
+        }
     }
 }
