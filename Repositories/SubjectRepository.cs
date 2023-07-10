@@ -41,5 +41,10 @@ namespace Repositories
         {
             return await dbContext.Subjects.FirstOrDefaultAsync(s => s.Name == subjectName);
         }
+
+        public async Task<bool> ExistsById(int subjectId)
+        {
+            return await dbContext.Subjects.AnyAsync(s => s.Id == subjectId);
+        }
     }
 }

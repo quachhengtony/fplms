@@ -34,5 +34,6 @@ namespace Repositories.Interfaces
         public Task<int> SetGroupDisableAsync(int groupId);
 
         public Task<int> SetGroupEnableAsync(int groupId);
+        public Task<bool>  ExistsById(int groupId);
     }
 }

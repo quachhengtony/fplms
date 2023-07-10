@@ -10,6 +10,7 @@ namespace Repositories.Interfaces
 {
     public interface ISubjectRepository
     {
+        Task<bool> ExistsById(int subjectId);
         Task<bool> ExistsByName(string name);
         Task<Subject> FindByName(string subjectName);
     }

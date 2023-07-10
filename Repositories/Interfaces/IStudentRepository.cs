@@ -11,9 +11,10 @@ namespace Repositories.Interfaces
     public interface IStudentRepository
     {
 
-        Task<Group> FindGroupByStudentIdAndClassId(int studentId, int classId);
-        Task<int> FindStudentIdByEmail(string email);
-        Task<Student> FindOneById(int studentId);
-        Task<bool> ExistsByEmail(string email);
+        public Task<Group> FindGroupByStudentIdAndClassId(int studentId, int classId);
+        public Task<int> FindStudentIdByEmail(string email);
+        public Task<Student> FindOneById(int studentId);
+        public Task<bool> ExistsByEmail(string email);
+        public Task<bool> ExistsById(int studentId);
     }
 }

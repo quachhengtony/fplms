@@ -104,5 +104,11 @@ namespace Repositories
         {
             return dbContext.Database.ExecuteSqlRawAsync($"insert into student_class(STUDENT_id, CLASS_id) values ({studentId}, {classId})");
         }
+
+        public Task<bool> ExistsByIdAsync(int? classId)
+        {
+            return dbContext.Classes
+                .AnyAsync(c => c.Id == classId && c.IsDisable == 0);
+        }
     }
 }

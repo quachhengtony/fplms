@@ -5,6 +5,13 @@ namespace BusinessObjects.Models;
 
 public partial class Group
 {
+    private object groupId;
+
+    public Group(object groupId)
+    {
+        this.groupId = groupId;
+    }
+
     public int Id { get; set; }
 
     public int? Number { get; set; }

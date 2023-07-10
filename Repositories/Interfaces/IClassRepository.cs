@@ -28,7 +28,6 @@ namespace Repositories.Interfaces
         public Task<int> FindClassBySemesterAsync(string semesterCode);
 
         public Task<int> FindClassBySubjectAsync(int subjectId);
-
-
+        public Task<bool> ExistsByIdAsync(int? classId);
     }
 }
