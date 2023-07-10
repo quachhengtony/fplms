@@ -35,17 +35,20 @@ namespace Repositories
 
         public async Task DeleteStudentInGroup(int studentId, int classId)
         {
-            await dbContext.Database.ExecuteSqlRawAsync("DELETE FROM STUDENT_GROUP WHERE STUDENT_id = {0} AND CLASS_id = {1}", studentId, classId);
+            using (var tempContext = new FplmsManagementContext())
+            {
+                await tempContext.Database.ExecuteSqlRawAsync("DELETE FROM student_group WHERE STUDENT_id = {0} AND CLASS_id = {1}", studentId, classId);
+            }
         }
 
         public async Task DeleteAllStudentInGroup(int groupId)
         {
-            await dbContext.Database.ExecuteSqlRawAsync("DELETE FROM STUDENT_GROUP WHERE GROUP_id = {0}", groupId);
+            await dbContext.Database.ExecuteSqlRawAsync("DELETE FROM student_group WHERE GROUP_id = {0}", groupId);
         }
 
         public async Task UpdateStudentGroup(int studentId, int classId, int groupNumber)
         {
-            await dbContext.Database.ExecuteSqlRawAsync("UPDATE STUDENT_GROUP SET GROUP_id = (SELECT id FROM [GROUP] WHERE CLASS_id = {0} AND number = {1}) WHERE STUDENT_id = {2} AND CLASS_id = {0}", classId, groupNumber, studentId);
+            await dbContext.Database.ExecuteSqlRawAsync("UPDATE `student_group` SET GROUP_id = (SELECT id FROM `group` WHERE CLASS_id = {0} AND number = {1}) WHERE STUDENT_id = {2} AND CLASS_id = {0}", classId, groupNumber, studentId);
         }
 
         public async Task<int> GetCurrentNumberOfMemberInGroup(int groupId)
@@ -55,7 +58,7 @@ namespace Repositories
 
         public async Task AddStudentInGroup(int studentId, int groupId, int classId, int isLeader)
         {
-            await dbContext.Database.ExecuteSqlRawAsync("INSERT INTO STUDENT_GROUP (STUDENT_id, GROUP_id, CLASS_id, is_leader) VALUES ({0}, {1}, {2}, {3})", studentId, groupId, classId, isLeader);
+            await dbContext.Database.ExecuteSqlRawAsync("INSERT INTO student_group (STUDENT_id, GROUP_id, CLASS_id, is_leader) VALUES ({0}, {1}, {2}, {3})", studentId, groupId, classId, isLeader);
         }
 
         public async Task<int> FindStudentLeaderRoleInClass(int studentId, int classId)
@@ -75,7 +78,10 @@ namespace Repositories
 
         public async Task UpdateGroupLeader(int groupId, int studentId, int isLeader)
         {
-            await dbContext.Database.ExecuteSqlRawAsync("UPDATE STUDENT_GROUP SET is_leader = {0} WHERE GROUP_id = {1} AND STUDENT_id = {2}", isLeader, groupId, studentId);
+            using (var tempContext = new FplmsManagementContext())
+            {
+                await tempContext.Database.ExecuteSqlRawAsync("UPDATE student_group SET is_leader = {0} WHERE GROUP_id = {1} AND STUDENT_id = {2}", isLeader, groupId, studentId);
+            }
         }
 
         public async Task<int> ChooseRandomGroupMember(int groupId)
@@ -85,7 +91,7 @@ namespace Repositories
 
         public async Task AddRandomGroupLeader(int groupId, int leaderId)
         {
-            await dbContext.Database.ExecuteSqlRawAsync("UPDATE STUDENT_GROUP SET is_leader = 1 WHERE GROUP_id = {0} AND STUDENT_id = {1}", groupId, leaderId);
+            await dbContext.Database.ExecuteSqlRawAsync("UPDATE student_group SET is_leader = 1 WHERE GROUP_id = {0} AND STUDENT_id = {1}", groupId, leaderId);
         }
     }
 }

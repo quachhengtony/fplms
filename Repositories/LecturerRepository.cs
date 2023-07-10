@@ -45,7 +45,9 @@ namespace Repositories
 
         public Task<Lecturer> FindOneByEmailAsync(string lecturerEmail)
         {
-            return dbContext.Lecturers.Where(l => l.Email == lecturerEmail).FirstOrDefaultAsync();
+            return dbContext.Lecturers
+                .Include(l => l.Classes)
+                .Where(l => l.Email == lecturerEmail).FirstOrDefaultAsync();
         }
 
         public Task SaveLecturerAsync(Lecturer lecturer)

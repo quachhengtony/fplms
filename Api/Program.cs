@@ -11,7 +11,10 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using Microsoft.AspNetCore.Http;
-using FPLMS.Api.Models;
+using Api.Services.Subjects;
+using Api.Services.Students;
+using Api.Services.Groups;
+using Api.Services.Classes;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +22,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IClassService, ClassService>();
+builder.Services.AddScoped<ISubjectService, SubjectService>();
+builder.Services.AddScoped<IStudentService, StudentService>();
+builder.Services.AddScoped<IGroupService, GroupService>();
 builder.Services.AddScoped<ValidationFilterAttribute>();
 builder.Services.AddHttpLogging(options =>
 {

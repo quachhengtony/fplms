@@ -8,12 +8,14 @@ using System.Threading.Tasks;
 
 namespace Repositories.Interfaces
 {
-    internal interface ISemesterRepository
+    public interface ISemesterRepository
     {
         public Task<HashSet<Semester>> GetSemester(String code);
 
-         public Task<DateTime> GetSemesterEndDate(String code);
+        public Task<DateTime> GetSemesterEndDate(String code);
 
-         public Task<DateTime> GetSemesterStartDate(String code);
+        public Task<DateTime> GetSemesterStartDate(String code);
+
+        public Task<bool> ExistsById(string code);
     }
 }
