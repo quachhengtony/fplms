@@ -1,13 +1,9 @@
-﻿using System.Text.Json;
-using System;
-using System.Text.Json.Serialization;
-
-namespace Api.Dto.Shared
+﻿namespace Api.Dto.Shared
 {
     namespace plms.ManagementService.Model.DTO
     {
-        public class SemesterDTO
-        {
+    public class SemesterDTO
+    {
             public string Code { get; set; }
 
             [JsonConverter(typeof(CustomDateTimeConverter))]

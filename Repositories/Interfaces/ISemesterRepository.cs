@@ -13,8 +13,11 @@ namespace Repositories.Interfaces
     {
         public Task<HashSet<Semester>> GetSemester(String code);
 
-         public Task<DateTime> GetSemesterEndDate(String code);
+        public Task<DateTime> GetSemesterEndDate(String code);
 
+        public Task<DateTime> GetSemesterStartDate(String code);
+
+        public Task<bool> ExistsById(string code);
          public Task<DateTime> GetSemesterStartDate(String code);
         public Task SaveAsync(Semester semester);
 

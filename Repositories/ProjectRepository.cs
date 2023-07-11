@@ -39,6 +39,14 @@ namespace Repositories
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<int> ExistsById(int projectId)
+        {
+            return await dbContext.Projects
+                .FromSqlRaw("SELECT * FROM PROJECT WHERE id = {1} ", projectId)
+                .Select(p => p.Id)
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<HashSet<Project>> FindBySubjectIdAndLecturerIdAndSemester(int subjectId, int lecturerId, string semesterCode)
         {
             var projects = await dbContext.Projects

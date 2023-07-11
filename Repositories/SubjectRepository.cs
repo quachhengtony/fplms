@@ -39,6 +39,44 @@ namespace Repositories
 
         public async Task<Subject> FindByName(string subjectName)
         {
+            return await dbContext.Subjects.Include(s => s.Classes).FirstOrDefaultAsync(s => s.Name == subjectName);
+        }
+
+        public async Task<Subject> FindById(int id)
+        {
+            return await dbContext.Subjects.FirstOrDefaultAsync(s => s.Id == id);
+        }
+
+
+        public async Task<List<Subject>> FindAll()
+        {
+            return await dbContext.Subjects.ToListAsync();
+        }
+
+        public async Task Save(Subject subject)
+        {
+            await dbContext.Subjects.AddAsync(subject);
+            dbContext.SaveChanges();
+            return;
+        }
+
+        public async Task Delete(Subject subject)
+        {
+            dbContext.Subjects.Remove(subject);
+            dbContext.SaveChanges();
+            return;
+        }
+
+        public async Task<bool> ExistsById(int id)
+        {
+            return await dbContext.Subjects.AnyAsync(s => s.Id == id);
+        }
+
+        public async Task Update(Subject subject)
+        {
+            dbContext.Subjects.Update(subject);
+            dbContext.SaveChanges();
+            return;
             return await dbContext.Subjects.FirstOrDefaultAsync(s => s.Name == subjectName);
         }
 

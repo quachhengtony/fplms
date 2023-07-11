@@ -9,6 +9,9 @@ namespace Repositories.Interfaces
 {
     public interface IGroupRepository
     {
+        public Task Add(Group group);
+        public Task Update(Group group);
+        public Task Delete(Group group);
         public Task<Group> FindOneByIdAsync(int groupId);
 
         public Task<int> ExistByProjectAsync(int projectId);

@@ -9,6 +9,9 @@ namespace Repositories.Interfaces
 {
     public interface IClassRepository
     {
+        public Task Add(Class _class);
+        public Task Update(Class _class);
+        public Task Delete(Class _class);
         public Task<Class> FindOneByIdAsync(int classId);
 
         public Task<int> ExistInClassAsync(int studentId, int classId);

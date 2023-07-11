@@ -72,7 +72,7 @@ namespace Repositories
         public Task<Class> FindOneByIdAsync(int classId)
         {
             return dbContext.Classes.Where(c => c.Id == classId && c.IsDisable == 0)
-                .Include(c => c.Groups)
+                .Include(c => c.Groups).ThenInclude(g => g.Project)
                 .Include(c => c.Lecturer)
                 .Include(c => c.Students)
                 .Include(c => c.SemesterCodeNavigation)
@@ -83,6 +83,7 @@ namespace Repositories
         {
             return dbContext.Classes
                 .Where(c => c.Name.Contains(searchStr) && c.IsDisable == 0)
+                .Include(c => c.Lecturer)
                 .ToListAsync();
         }
 
@@ -103,6 +104,27 @@ namespace Repositories
         public Task<int> InsertStudentInClassAsync(int studentId, int classId)
         {
             return dbContext.Database.ExecuteSqlRawAsync($"insert into student_class(STUDENT_id, CLASS_id) values ({studentId}, {classId})");
+        }
+
+        public async Task Add(Class _class)
+        {
+            dbContext.Classes.Add(_class);
+            dbContext.SaveChanges();
+            return;
+        }
+
+        public async Task Update(Class _class)
+        {
+            dbContext.Classes.Update(_class);
+            dbContext.SaveChanges();
+            return;
+        }
+
+        public async Task Delete(Class _class)
+        {
+            dbContext.Classes.Remove(_class);
+            dbContext.SaveChanges();
+            return;
         }
 
         public Task<bool> ExistsByIdAsync(int? classId)
