@@ -1,25 +1,28 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
+using FPLMS.Api.Dto;
+using Api.Dto.Shared;
+using Api.Dto.Request;
 
 namespace Api.Services.Reports
 {
     public interface IReportService
     {
-        Task<Set<CycleReportDTO>> GetCycleReportInGroup(int groupId);
-        Task<CycleReportDTO> AddCycleReport(CreateCycleReportRequest reportRequest, int leaderId);
-        Task<CycleReportDTO> UpdateCycleReport(UpdateCycleReportRequest reportRequest, int leaderId);
-        Task DeleteCycleReport(int groupId, int reportId, int leaderId);
-        Task<CycleReportDTO> FeedbackCycleReport(FeedbackCycleReportRequest feedbackCycleReportRequest, string userEmail);
-        Task<ProgressReportDTO> GetProgressReportDetailByLecturer(string userEmail, int reportId);
-        Task<ProgressReportDTO> GetProgressReportDetailByStudent(string userEmail, int reportId);
-        Task<Set<ProgressReportDTO>> GetProgressReportInGroupByStudent(int classId, int groupId, DateTime startDate, DateTime endDate, string userEmail);
-        Task<Set<ProgressReportDTO>> GetProgressReportInGroupByLecturer(int classId, int groupId, DateTime startDate, DateTime endDate, string userEmail);
-        Task<Set<ProgressReportDTO>> GetProgressReportInGroup(int classId, int groupId, DateTime startDate, DateTime endDate);
-        Task AddProgressReport(CreateProgressReportRequest reportRequest, int studentId);
-        Task UpdateProgressReport(UpdateProgressReportRequest reportRequest, int studentId);
-        Task DeleteProgressReport(int groupId, int reportId, int studentId);
-        Task<int?> GetCurrentCycle(int groupId);
-        bool CompareDate(DateTime date1, DateTime date2);
+        public Task<ResponseDto<CycleReportDTO>> GetCycleReportDetailByLecturerAsync(string userEmail, int reportId);
+        public Task<ResponseDto<CycleReportDTO>> GetCycleReportDetailByStudentAsync(string userEmail, int reportId);
+        public Task<ResponseDto<ProgressReportDTO>> GetProgressReportDetailByLecturerAsync(string userEmail, int reportId);
+        public Task<ResponseDto<ProgressReportDTO>> GetProgressReportDetailByStudentAsync(string userEmail, int reportId);
+        public Task<ResponseDto<HashSet<CycleReportDTO>>> GetCycleReportInGroupByLecturerAsync(int? groupId, string userEmail);
+        public Task<ResponseDto<HashSet<CycleReportDTO>>> GetCycleReportInGroupByStudentAsync(int? groupId, string userEmail);
+        public Task<ResponseDto<HashSet<ProgressReportDTO>>> GetProgressReportInGroupByLecturerAsync(int classId, int groupId, DateTime startDate, DateTime endDate, string userEmail);
+        public Task<ResponseDto<HashSet<ProgressReportDTO>>> GetProgressReportInGroupByStudentAsync(int classId, int groupId, DateTime startDate, DateTime endDate, string userEmail);
+        public Task<ResponseDto<HashSet<ProgressReportDTO>>> GetProgressReportInGroup(int classId, int groupId, DateTime? startDate, DateTime? endDate);
+        public Task<ResponseDto<CycleReportDTO>> AddCycleReportAsync(CreateCycleReportRequest reportRequest, int leaderId);
+        public Task<ResponseDto<CycleReportDTO>> UpdateCycleReport(UpdateCycleReportRequest reportRequest, int leaderId);
+        public Task<ResponseDto<object>> DeleteCycleReport(int groupId, int reportId, int leaderId);
+        public Task<ResponseDto<object>> AddProgressReportAsync(CreateProgressReportRequest reportRequest, int studentId);
+        public Task<ResponseDto<object>> UpdateProgressReportAsync(UpdateProgressReportRequest reportRequest, int studentId);
+        public Task<ResponseDto<object>> DeleteProgressReportAsync(int groupId, int reportId, int studentId);
     }
 }

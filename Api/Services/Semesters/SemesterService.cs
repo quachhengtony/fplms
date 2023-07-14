@@ -1,14 +1,14 @@
-﻿using Api.Dto.Shared;
-using Api.Dto.Shared.plms.ManagementService.Model.DTO;
-using Api.Services.Semesters;
-using BusinessObjects.Models;
-using Microsoft.Extensions.Logging;
-using Repositories;
-using Repositories.Interfaces;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Api.Dto.Shared.plms.ManagementService.Model.DTO;
+using Api.Services.Constant;
+using Api.Services.Semesters;
+using BusinessObjects.Models;
+using FPLMS.Api.Dto;
+using Microsoft.Extensions.Logging;
+using Repositories.Interfaces;
 
 namespace Api.Services.Semesters
 {
@@ -17,8 +17,7 @@ namespace Api.Services.Semesters
         private readonly ISemesterRepository _semesterRepository;
         private readonly IClassRepository _classRepository;
         private readonly ILogger<SemesterService> _logger;
-        private static readonly String SEMESTER_HAS_ASSOCIATED_CLASSES_MESSAGE = "Some classes created in this semester.";
-
+        private const string SEMESTER_HAS_ASSOCIATED_CLASSES_MESSAGE = "Semester still has class";
         public SemesterService(
             ISemesterRepository semesterRepository,
             IClassRepository classRepository,
@@ -29,7 +28,26 @@ namespace Api.Services.Semesters
             _logger = logger;
         }
 
-        public async Task AddSemester(SemesterDTO semesterDto)
+        public async Task<ResponseDto<List<SemesterDTO>>> GetSemester(string code)
+        {
+            _logger.LogInformation("GetSemester(code: {code})", code);
+
+            if (code == null)
+                code = "";
+
+            var semesterSet = await _semesterRepository.GetSemester("%" + code + "%");
+            var semesterDtoSet = semesterSet.Select(semesterEntity => MapToSemesterDTO(semesterEntity)).ToList();
+
+            _logger.LogInformation("Get semester success");
+            return new ResponseDto<List<SemesterDTO>>
+            {
+                code = 200,
+                message = "Success",
+                data = semesterDtoSet
+            };
+        }
+
+        public async Task<ResponseDto<object>> AddSemester(SemesterDTO semesterDto)
         {
             _logger.LogInformation("AddSemester(semesterDto: {semesterDto})", semesterDto);
 
@@ -49,23 +67,16 @@ namespace Api.Services.Semesters
             await _semesterRepository.SaveAsync(semester);
 
             _logger.LogInformation("Create semester success");
+
+            return new ResponseDto<object>
+            {
+                code = 200,
+                message = "Success",
+                data = null
+            };
         }
 
-        public async Task<HashSet<SemesterDTO>> GetSemester(string code)
-        {
-            _logger.LogInformation("GetSemester(code: {code})", code);
-
-            if (code == null)
-                code = "";
-
-            var semesterSet = await _semesterRepository.GetSemester("%" + code + "%");
-            var semesterDtoSet = semesterSet.Select(semesterEntity => MapToSemesterDTO(semesterEntity)).ToHashSet();
-
-            _logger.LogInformation("Get semester success");
-            return semesterDtoSet;
-        }
-
-        public async Task UpdateSemester(SemesterDTO semesterDto)
+        public async Task<ResponseDto<object>> UpdateSemester(SemesterDTO semesterDto)
         {
             _logger.LogInformation("UpdateSemester(semesterDto: {semesterDto})", semesterDto);
 
@@ -75,7 +86,7 @@ namespace Api.Services.Semesters
                 throw new ArgumentException(ServiceMessage.INVALID_ARGUMENT_MESSAGE);
             }
 
-            if (!await _semesterRepository.ExistsByIdAsync(semesterDto.Code))
+            if (!await _semesterRepository.ExistsById(semesterDto.Code))
             {
                 _logger.LogWarning("Update semester: {0}", ServiceMessage.ID_NOT_EXIST_MESSAGE);
                 throw new ArgumentException(ServiceMessage.ID_NOT_EXIST_MESSAGE);
@@ -91,9 +102,16 @@ namespace Api.Services.Semesters
             await _semesterRepository.SaveAsync(semester);
 
             _logger.LogInformation("Update semester success");
+
+            return new ResponseDto<object>
+            {
+                code = 200,
+                message = "Success",
+                data = null
+            };
         }
 
-        public async Task DeleteSemester(string code)
+        public async Task<ResponseDto<object>> DeleteSemester(string code)
         {
             _logger.LogInformation("DeleteSemester(code: {code})", code);
 
@@ -103,7 +121,7 @@ namespace Api.Services.Semesters
                 throw new ArgumentException(ServiceMessage.INVALID_ARGUMENT_MESSAGE);
             }
 
-            if (!await _semesterRepository.ExistsByIdAsync(code))
+            if (!await _semesterRepository.ExistsById(code))
             {
                 _logger.LogWarning("Delete semester: {0}", ServiceMessage.ID_NOT_EXIST_MESSAGE);
                 throw new ArgumentException(ServiceMessage.ID_NOT_EXIST_MESSAGE);
@@ -119,6 +137,13 @@ namespace Api.Services.Semesters
             await _semesterRepository.DeleteAsync(code);
 
             _logger.LogInformation("Delete semester success");
+
+            return new ResponseDto<object>
+            {
+                code = 200,
+                message = "Success",
+                data = null
+            };
         }
 
         private async Task<int> FindClassBySemester(string semesterCode)

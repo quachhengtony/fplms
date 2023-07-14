@@ -53,5 +53,10 @@ namespace Repositories
         {
             return await dbContext.Students.AnyAsync(s => s.Email == email);
         }
+
+        public async Task<bool> ExistsById(int studentId)
+        {
+            return await dbContext.Students.AnyAsync(s => s.Id == studentId);
+        }
     }
 }

@@ -75,14 +75,9 @@ namespace Repositories
         public async Task Update(Subject subject)
         {
             dbContext.Subjects.Update(subject);
-            dbContext.SaveChanges();
-            return;
-            return await dbContext.Subjects.FirstOrDefaultAsync(s => s.Name == subjectName);
+            await dbContext.SaveChangesAsync();
         }
 
-        public async Task<bool> ExistsById(int subjectId)
-        {
-            return await dbContext.Subjects.AnyAsync(s => s.Id == subjectId);
-        }
+
     }
 }

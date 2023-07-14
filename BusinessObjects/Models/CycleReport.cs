@@ -22,4 +22,11 @@ public partial class CycleReport
     public int GroupId { get; set; }
 
     public virtual Group Group { get; set; } = null!;
+    public CycleReport(int id)
+    {
+        this.Id = id;
+    }
+    public CycleReport()
+    {
+    }
 }

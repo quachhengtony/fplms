@@ -5,11 +5,12 @@ namespace BusinessObjects.Models;
 
 public partial class ProgressReport
 {
-    private int reportId;
-
+    public ProgressReport()
+    {
+    }
     public ProgressReport(int reportId)
     {
-        this.reportId = reportId;
+        this.Id = reportId;
     }
 
     public int Id { get; set; }

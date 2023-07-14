@@ -1,4 +1,8 @@
-﻿namespace Api.Dto.Shared
+﻿using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+namespace Api.Dto.Shared
 {
     namespace plms.ManagementService.Model.DTO
     {

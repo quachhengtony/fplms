@@ -12,7 +12,6 @@ namespace Repositories.Interfaces
     {
         Task<bool> ExistsById(int subjectId);
         Task<bool> ExistsByName(string name);
-        Task<bool> ExistsById(int id);
         Task<Subject> FindByName(string subjectName);
         Task<Subject> FindById(int id);
         Task<List<Subject>> FindAll();

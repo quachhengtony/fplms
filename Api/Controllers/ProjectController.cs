@@ -6,6 +6,7 @@ using Api.Dto.Shared;
 using Api.Services.Projects;
 using Api.Services.Groups;
 using Api.Services.Students;
+using FPLMS.Api.Dto;
 
 namespace Api.Controllers
 {
@@ -31,7 +32,7 @@ namespace Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<HashSet<ProjectDTO>>> GetAllProjects(
+        public async Task<ActionResult<ResponseDto<HashSet<ProjectDto>>>> GetAllProjects(
             [FromQuery(Name = "classId")] int? classId,
             [FromQuery(Name = "semesterCode")] string semesterCode,
             [FromQuery(Name = "userRole")] string userRole,
@@ -39,12 +40,12 @@ namespace Api.Controllers
         {
             if (userRole.Contains("ROLE_LECTURER"))
             {
-                var projects = await _projectService.GetProjectByLecturer(semesterCode, classId, userEmail);
+                var projects = await _projectService.GetProjectByLecturerAsync(semesterCode, classId.Value, userEmail);
                 return Ok(projects);
             }
             else if (userRole.Contains("ROLE_STUDENT"))
             {
-                var projects = await _projectService.GetProjectFromClassByStudent((int)classId, userEmail);
+                var projects = await _projectService.GetProjectFromClassByStudentAsync(classId.Value, userEmail);
                 return Ok(projects);
             }
 
@@ -63,28 +64,28 @@ namespace Api.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<int>> AddProject(
+        public async Task<ActionResult<ResponseDto<int>>> AddProject(
             [FromQuery(Name = "userEmail")] string userEmail,
-            [FromBody] ProjectDTO projectDTO)
+            [FromBody] ProjectDto ProjectDto)
         {
-            return await _projectService.AddProject(projectDTO, userEmail);
+            return await _projectService.AddProjectAsync(ProjectDto, userEmail);
         }
 
         [HttpPut]
-        public async Task<ActionResult> UpdateProject(
+        public async Task<ActionResult<ResponseDto<object>>> UpdateProject(
             [FromQuery(Name = "userEmail")] string userEmail,
-            [FromBody] ProjectDTO projectDTO)
+            [FromBody] ProjectDto ProjectDto)
         {
-            await _projectService.UpdateProject(projectDTO, userEmail);
+            await _projectService.UpdateProjectAsync(ProjectDto, userEmail);
             return NoContent();
         }
 
         [HttpDelete("{projectId}")]
-        public async Task<ActionResult> DeleteProject(
+        public async Task<ActionResult<ResponseDto<object>>> DeleteProject(
             [FromQuery(Name = "userEmail")] string userEmail,
             int projectId)
         {
-            await _projectService.DeleteProject(projectId, userEmail);
+            await _projectService.DeleteProjectAsync(projectId, userEmail);
             return NoContent();
         }
     }

@@ -1,17 +1,19 @@
-﻿using Api.Dto.Shared;
-using Microsoft.Extensions.Logging;
-using Repositories.Interfaces;
-using Repositories;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System;
-using BusinessObjects.Models;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Logging;
+using Api.Dto.Shared;
+using Api.Services.Constant;
+using BusinessObjects.Models;
+using FPLMS.Api.Dto;
+using Repositories.Interfaces;
+using System.Threading.Tasks;
+
 
 namespace Api.Services.Projects
 {
     public class ProjectService : IProjectService
     {
+        private readonly ILogger<ProjectService> _logger;
         private readonly IProjectRepository _projectRepository;
         private readonly IClassRepository _classRepository;
         private readonly IGroupRepository _groupRepository;
@@ -19,26 +21,26 @@ namespace Api.Services.Projects
         private readonly ILecturerRepository _lecturerRepository;
         private readonly ISubjectRepository _subjectRepository;
         private readonly ISemesterRepository _semesterRepository;
-        private readonly ILogger<ProjectService> _logger;
 
-        private static readonly string PROJECT_NOT_MANAGE = "Lecturer not manage this project.";
-        private static readonly string SUBJECT_NOT_EXIST = "Subject not exist";
-        private static readonly string SEMESTER_NOT_EXIST = "Semester not exist";
-        private static readonly string GET_PROJECT = "Get project from class: ";
-        private static readonly string ADD_PROJECT = "Add project to class: ";
-        private static readonly string UPDATE_PROJECT = "Update project in class: ";
-        private static readonly string DELETE_PROJECT = "Delete project in class: ";
+        private const string PROJECT_NOT_MANAGE = "Lecturer not manage this project.";
+        private const string SUBJECT_NOT_EXIST = "Subject not exist";
+        private const string SEMESTER_NOT_EXIST = "Semester not exist";
+        private const string GET_PROJECT = "Get project from class: ";
+        private const string ADD_PROJECT = "Add project to class: ";
+        private const string UPDATE_PROJECT = "Update project in class: ";
+        private const string DELETE_PROJECT = "Delete project in class: ";
 
         public ProjectService(
+            ILogger<ProjectService> logger,
             IProjectRepository projectRepository,
             IClassRepository classRepository,
             IGroupRepository groupRepository,
             IStudentRepository studentRepository,
             ILecturerRepository lecturerRepository,
             ISubjectRepository subjectRepository,
-            ISemesterRepository semesterRepository,
-            ILogger<ProjectService> logger)
+            ISemesterRepository semesterRepository)
         {
+            _logger = logger;
             _projectRepository = projectRepository;
             _classRepository = classRepository;
             _groupRepository = groupRepository;
@@ -46,249 +48,206 @@ namespace Api.Services.Projects
             _lecturerRepository = lecturerRepository;
             _subjectRepository = subjectRepository;
             _semesterRepository = semesterRepository;
-            _logger = logger;
         }
 
-        public async Task<HashSet<ProjectDTO>> GetProjectFromClassByStudent(int classId, string userEmail)
+        public async Task<ResponseDto<HashSet<ProjectDto>>> GetProjectFromClassByStudentAsync(int classId, string userEmail)
         {
-            _logger.LogInformation("GetProjectFromClassByStudent(classId: {classId}, userEmail: {userEmail})", classId, userEmail);
-
-            var studentId = await _studentRepository.FindStudentIdByEmail(userEmail);
-            if (studentId == null || classId == null)
+            _logger.LogInformation("GetProjectFromClassByStudent(classId: {0}, userEmail: {1})", classId, userEmail);
+            int studentId = await _studentRepository.FindStudentIdByEmail(userEmail);
+            if (studentId == 0 || classId == 0)
             {
                 _logger.LogWarning("{0}{1}", GET_PROJECT, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
-                throw new ArgumentException(ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                return new ResponseDto<HashSet<ProjectDto>>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
             }
-
-            if (await _classRepository.ExistInClassAsync(studentId, classId) == null)
+            if (await _classRepository.ExistInClassAsync(studentId, classId) == 0)
             {
                 _logger.LogWarning("{0}{1}", GET_PROJECT, "Student is not in class");
-                throw new ArgumentException("Student is not in class");
+                return new ResponseDto<HashSet<ProjectDto>>(ServiceStatusCode.BAD_REQUEST_STATUS, "Student is not in class");
             }
-
-            return await GetProjectFromClass(classId);
+            return await GetProjectFromClassAsync(classId);
         }
 
-        public async Task<HashSet<ProjectDTO>> GetProjectByLecturer(string semesterCode, int? classId, string userEmail)
+        public async Task<ResponseDto<HashSet<ProjectDto>>> GetProjectByLecturerAsync(string semesterCode, int classId, string userEmail)
         {
-            _logger.LogInformation("GetProjectByLecturer(semesterCode: {semesterCode}, classId: {classId}, userEmail: {userEmail})", semesterCode, classId, userEmail);
-
-            var lecturerId = await _lecturerRepository.FindLecturerIdByEmailAsync(userEmail);
-            if (lecturerId == null)
+            _logger.LogInformation("GetProjectByLecturer(semesterCode: {0}, classId: {1}, userEmail: {2})", semesterCode, classId, userEmail);
+            int lecturerId = await _lecturerRepository.FindLecturerIdByEmailAsync(userEmail);
+            if (lecturerId == 0)
             {
                 _logger.LogWarning("{0}{1}", GET_PROJECT, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
-                throw new ArgumentException(ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                return new ResponseDto<HashSet<ProjectDto>>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
             }
-
-            if (classId != null)
+            if (classId != 0)
             {
                 if (!await _classRepository.ExistsByIdAsync(classId))
                 {
                     _logger.LogWarning("{0}{1}", GET_PROJECT, ServiceMessage.ID_NOT_EXIST_MESSAGE);
-                    throw new ArgumentException(ServiceMessage.ID_NOT_EXIST_MESSAGE);
+                    return new ResponseDto<HashSet<ProjectDto>>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.ID_NOT_EXIST_MESSAGE);
                 }
-
-                if (!lecturerId.Equals((await _classRepository.FindOneByIdAsync((int)classId)).LecturerId))
+                if (!lecturerId.Equals((await _classRepository.FindOneByIdAsync(classId)).Lecturer.Id))
                 {
                     _logger.LogWarning("{0}{1}", GET_PROJECT, "Lecturer not manage class");
-                    throw new ArgumentException("Lecturer not manage class");
+                    return new ResponseDto<HashSet<ProjectDto>>(ServiceStatusCode.BAD_REQUEST_STATUS, "Lecturer not manage class");
                 }
-
-                return await GetProjectFromClass((int)classId);
+                return await GetProjectFromClassAsync(classId);
             }
 
-            if (semesterCode != null)
+            if (!string.IsNullOrEmpty(semesterCode))
             {
-                return await GetAllProjectInSemesterByLecturer(lecturerId, semesterCode);
+                return await GetAllProjectInSemesterByLecturerAsync(lecturerId, semesterCode);
             }
-
-            return await GetAllProjectByLecturer(lecturerId);
+            return await GetAllProjectByLecturerAsync(lecturerId);
         }
 
-        public async Task<HashSet<ProjectDTO>> GetProjectFromClass(int classId)
+        public async Task<ResponseDto<HashSet<ProjectDto>>> GetProjectFromClassAsync(int classId)
         {
-            _logger.LogInformation("GetProjectFromClass(classId: {classId})", classId);
+            _logger.LogInformation("GetProjectFromClass(classId: {0})", classId);
 
-            if (_classRepository.FindOneByIdAsync(classId) == null)
+            if (await _classRepository.FindOneByIdAsync(classId) == null)
             {
                 _logger.LogWarning("Get project from class: {0}", ServiceMessage.INVALID_ARGUMENT_MESSAGE);
-                throw new ArgumentException(ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                return new ResponseDto<HashSet<ProjectDto>>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
             }
-            var classEntity = await _classRepository.FindOneByIdAsync(classId);
-
-            var projectSet = await _projectRepository.FindBySubjectIdAndLecturerIdAndSemester(
-                classEntity.SubjectId,
-                classEntity.LecturerId,
-                classEntity.SemesterCode);
-
-            var projectDtoSet = projectSet.Select(projectEntity => MapToProjectDTO(projectEntity)).ToHashSet();
-
+            var projectSet = await _projectRepository
+                .FindBySubjectIdAndLecturerIdAndSemester((await _classRepository.FindOneByIdAsync(classId)).Subject.Id,
+                                                        (await _classRepository.FindOneByIdAsync(classId)).Lecturer.Id,
+                                                        (await _classRepository.FindOneByIdAsync(classId)).SemesterCode);
+            var ProjectDtoSet = projectSet
+            .Select(projectEntity => MapToProjectDto(projectEntity))
+                .ToHashSet();
             _logger.LogInformation("Get project from class success");
-            return projectDtoSet;
+            return new ResponseDto<HashSet<ProjectDto>>(ServiceStatusCode.OK_STATUS, ServiceMessage.SUCCESS_MESSAGE, ProjectDtoSet);
         }
 
-        public async Task<HashSet<ProjectDTO>> GetAllProjectInSemesterByLecturer(int lecturerId, string semesterCode)
+        public async Task<ResponseDto<HashSet<ProjectDto>>> GetAllProjectInSemesterByLecturerAsync(int lecturerId, string semesterCode)
         {
-            _logger.LogInformation("GetAllProjectInSemesterByLecturer(lecturerId: {lecturerId}, semesterCode: {semesterCode})", lecturerId, semesterCode);
+            _logger.LogInformation("GetAllProjectInSemesterByLecturer(lecturerId: {0}, semesterCode: {1})", lecturerId, semesterCode);
 
-            if (!await _semesterRepository.ExistsByIdAsync(semesterCode))
+            if (!await _semesterRepository.ExistsById(semesterCode))
             {
                 _logger.LogWarning("{0}{1}", GET_PROJECT, ServiceMessage.ID_NOT_EXIST_MESSAGE);
-                throw new ArgumentException(ServiceMessage.ID_NOT_EXIST_MESSAGE);
+                return new ResponseDto<HashSet<ProjectDto>>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.ID_NOT_EXIST_MESSAGE);
             }
-
             var projectSet = await _projectRepository.FindByLecturerIdAndSemester(lecturerId, semesterCode);
-            var projectDtoSet = projectSet.Select(projectEntity => MapToProjectDTO(projectEntity)).ToHashSet();
-
-            _logger.LogInformation("Get project from class success");
-            return projectDtoSet;
-        }
-
-        public async Task<HashSet<ProjectDTO>> GetAllProjectByLecturer(int lecturerId)
-        {
-            _logger.LogInformation("GetAllProjectByLecturer(lecturerId: {lecturerId})", lecturerId);
-
-            var projectSet = (await _projectRepository
-                .FindByLecturerId(lecturerId))
-                .Select(projectEntity => MapToProjectDTO(projectEntity))
+            var ProjectDtoSet = projectSet
+            .Select(projectEntity => MapToProjectDto(projectEntity))
                 .ToHashSet();
-
             _logger.LogInformation("Get project from class success");
-            return projectSet;
+            return new ResponseDto<HashSet<ProjectDto>>(ServiceStatusCode.OK_STATUS, ServiceMessage.SUCCESS_MESSAGE, ProjectDtoSet);
         }
 
-        public async Task<int> AddProject(ProjectDTO projectDTO, string userEmail)
+        public async Task<ResponseDto<HashSet<ProjectDto>>> GetAllProjectByLecturerAsync(int lecturerId)
         {
-            _logger.LogInformation("AddProject(projectDTO: {projectDTO}, userEmail: {userEmail})", projectDTO, userEmail);
+            _logger.LogInformation("GetAllProjectByLecturer(lecturerId: {0})", lecturerId);
 
-            var lecturerId = await _lecturerRepository.FindLecturerIdByEmailAsync(userEmail);
-            if (lecturerId == null || projectDTO == null || projectDTO.SubjectId == null || projectDTO.SemesterCode == null)
+            var projectSet = await _projectRepository.FindByLecturerId(lecturerId);
+            var ProjectDtoSet = projectSet
+            .Select(projectEntity => MapToProjectDto(projectEntity))
+                .ToHashSet();
+            _logger.LogInformation("Get project from class success");
+            return new ResponseDto<HashSet<ProjectDto>>(ServiceStatusCode.OK_STATUS, ServiceMessage.SUCCESS_MESSAGE, ProjectDtoSet);
+        }
+
+        public async Task<ResponseDto<int>> AddProjectAsync(ProjectDto ProjectDto, string userEmail)
+        {
+            _logger.LogInformation("AddProject(ProjectDto: {0}, userEmail: {1})", ProjectDto, userEmail);
+            int lecturerId = await _lecturerRepository.FindLecturerIdByEmailAsync(userEmail);
+            if (lecturerId == 0 || ProjectDto == null || ProjectDto.SubjectId == 0 || string.IsNullOrEmpty(ProjectDto.SemesterCode))
             {
                 _logger.LogWarning("{0}{1}", ADD_PROJECT, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
-                throw new ArgumentException(ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                return new ResponseDto<int>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
             }
-
-            if (!await _subjectRepository.ExistsById(projectDTO.SubjectId))
+            if (!await _subjectRepository.ExistsById((int)ProjectDto.SubjectId))
             {
                 _logger.LogWarning("{0}{1}", ADD_PROJECT, SUBJECT_NOT_EXIST);
-                throw new ArgumentException(SUBJECT_NOT_EXIST);
+                return new ResponseDto<int>(ServiceStatusCode.BAD_REQUEST_STATUS, SUBJECT_NOT_EXIST);
             }
-
-            if (!await _semesterRepository.ExistsByIdAsync(projectDTO.SemesterCode))
+            if (!await _semesterRepository.ExistsById(ProjectDto.SemesterCode))
             {
                 _logger.LogWarning("{0}{1}", ADD_PROJECT, SEMESTER_NOT_EXIST);
-                throw new ArgumentException(SEMESTER_NOT_EXIST);
+                return new ResponseDto<int>(ServiceStatusCode.BAD_REQUEST_STATUS, SEMESTER_NOT_EXIST);
             }
-
-            var project = MapToProjectEntity(projectDTO);
+            var project = MapToProject(ProjectDto);
             project.Lecturer = await _lecturerRepository.FindOneByEmailAsync(userEmail);
-            var id = await _projectRepository.SaveAsync(project);
-
+            int id = (await _projectRepository.SaveAsync(project));
             _logger.LogInformation("Add project success.");
-            return id;
+            return new ResponseDto<int>(ServiceStatusCode.OK_STATUS, ServiceMessage.SUCCESS_MESSAGE, id);
         }
 
-        public async Task UpdateProject(ProjectDTO projectDTO, string userEmail)
+        public async Task<ResponseDto<object>> UpdateProjectAsync(ProjectDto ProjectDto, string userEmail)
         {
-            _logger.LogInformation("UpdateProject(projectDTO: {projectDTO}, userEmail: {userEmail})", projectDTO, userEmail);
-
-            var lecturerId = await _lecturerRepository.FindLecturerIdByEmailAsync(userEmail);
-            if (lecturerId == null || projectDTO == null)
+            _logger.LogInformation("UpdateProject(ProjectDto: {0}, userEmail: {1})", ProjectDto, userEmail);
+            int lecturerId = await _lecturerRepository.FindLecturerIdByEmailAsync(userEmail);
+            if (lecturerId == 0 || ProjectDto == null)
             {
                 _logger.LogWarning("{0}{1}", UPDATE_PROJECT, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
-                throw new ArgumentException(ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                return new ResponseDto<object>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
             }
-
-            if (!await _subjectRepository.ExistsById(projectDTO.SubjectId))
+            if (!await _subjectRepository.ExistsById((int)(ProjectDto.SubjectId)))
             {
                 _logger.LogWarning("{0}{1}", UPDATE_PROJECT, SUBJECT_NOT_EXIST);
-                throw new ArgumentException(SUBJECT_NOT_EXIST);
+                return new ResponseDto<object>(ServiceStatusCode.BAD_REQUEST_STATUS, SUBJECT_NOT_EXIST);
             }
-
-            if (!await _semesterRepository.ExistsByIdAsync(projectDTO.SemesterCode))
+            if (!await _semesterRepository.ExistsById(ProjectDto.SemesterCode))
             {
                 _logger.LogWarning("{0}{1}", UPDATE_PROJECT, SEMESTER_NOT_EXIST);
-                throw new ArgumentException(SEMESTER_NOT_EXIST);
+                return new ResponseDto<object>(ServiceStatusCode.BAD_REQUEST_STATUS, SEMESTER_NOT_EXIST);
             }
-
-            if (_projectRepository.ExistsByLecturerId(lecturerId, projectDTO.Id) == null)
+            if (await _projectRepository.ExistsByLecturerId(lecturerId, ProjectDto.Id) == 0)
             {
                 _logger.LogWarning("{0}{1}", UPDATE_PROJECT, PROJECT_NOT_MANAGE);
-                throw new ArgumentException(PROJECT_NOT_MANAGE);
+                return new ResponseDto<object>(ServiceStatusCode.BAD_REQUEST_STATUS, PROJECT_NOT_MANAGE);
             }
-
-            var project = MapToProjectEntity(projectDTO);
+            var project = MapToProject(ProjectDto);
             project.Lecturer = await _lecturerRepository.FindOneByEmailAsync(userEmail);
             await _projectRepository.SaveAsync(project);
-
             _logger.LogInformation("Update project success.");
+            return new ResponseDto<object>(ServiceStatusCode.OK_STATUS, ServiceMessage.SUCCESS_MESSAGE);
         }
 
-        public async Task DeleteProject(int projectId, string userEmail)
+        public async Task<ResponseDto<object>> DeleteProjectAsync(int projectId, string userEmail)
         {
-            _logger.LogInformation("DeleteProject(projectId: {projectId}, userEmail: {userEmail})", projectId, userEmail);
-
-            var lecturerId = await _lecturerRepository.FindLecturerIdByEmailAsync(userEmail);
-            if (lecturerId == null)
+            _logger.LogInformation("DeleteProject(projectId: {0}, userEmail: {1})", projectId, userEmail);
+            int lecturerId = await _lecturerRepository.FindLecturerIdByEmailAsync(userEmail);
+            if (lecturerId == 0)
             {
                 _logger.LogWarning("{0}{1}", DELETE_PROJECT, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
-                throw new ArgumentException(ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                return new ResponseDto<object>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
             }
-
-            if (!_projectRepository.ExistsById(projectId))
+            if (await _projectRepository.ExistsById(projectId) != 0)
             {
                 _logger.LogWarning("{0}{1}", DELETE_PROJECT, "Project not exist");
-                throw new ArgumentException("Project not exist");
+                return new ResponseDto<object>(ServiceStatusCode.BAD_REQUEST_STATUS, "Project not exist");
             }
-
-            if (_projectRepository.ExistsByLecturerId(lecturerId, projectId) == null)
+            if (await _projectRepository.ExistsByLecturerId(lecturerId, projectId) == 0)
             {
                 _logger.LogWarning("{0}{1}", DELETE_PROJECT, PROJECT_NOT_MANAGE);
-                throw new ArgumentException(PROJECT_NOT_MANAGE);
+                return new ResponseDto<object>(ServiceStatusCode.BAD_REQUEST_STATUS, PROJECT_NOT_MANAGE);
             }
-
-            if (_groupRepository.ExistByProjectAsync(projectId) != null)
+            if (await _groupRepository.ExistByProjectAsync(projectId) != 0)
             {
                 _logger.LogWarning("{0}{1}", DELETE_PROJECT, "At least one group used this project.");
-                throw new ArgumentException("At least one group used this project.");
+                return new ResponseDto<object>(ServiceStatusCode.BAD_REQUEST_STATUS, "At least one group used this project.");
             }
-
             await _projectRepository.DeleteProject(projectId);
-
             _logger.LogInformation("Delete project success.");
+            return new ResponseDto<object>(ServiceStatusCode.OK_STATUS, ServiceMessage.SUCCESS_MESSAGE);
         }
 
-        private Project MapToProjectEntity(ProjectDTO projectDTO)
+        private static ProjectDto MapToProjectDto(Project projectEntity)
         {
-            return new Project
+            return new ProjectDto
             {
-                Id = projectDTO.Id,
-                Theme = projectDTO.Theme,
-                Name = projectDTO.Name,
-                Problem = projectDTO.Problem,
-                Context = projectDTO.Context,
-                Actors = projectDTO.Actors,
-                Requirements = projectDTO.Requirements,
-                SubjectId = projectDTO.SubjectId,
-                SemesterCode = projectDTO.SemesterCode,
-                // Map other properties as needed
+                Id = projectEntity.Id,
+                // Map other properties
             };
         }
 
-        private ProjectDTO MapToProjectDTO(Project projectEntity)
+        private static Project MapToProject(ProjectDto ProjectDto)
         {
-            return new ProjectDTO
+            return new Project
             {
-                Id = projectEntity.Id,
-                Theme = projectEntity.Theme,
-                Name = projectEntity.Name,
-                Problem = projectEntity.Problem,
-                Context = projectEntity.Context,
-                Actors = projectEntity.Actors,
-                Requirements = projectEntity.Requirements,
-                SubjectId = (int)projectEntity.SubjectId,
-                SemesterCode = projectEntity.SemesterCode,
-                // Map other properties as needed
+                Id = ProjectDto.Id,
+                // Map other properties
             };
         }
     }

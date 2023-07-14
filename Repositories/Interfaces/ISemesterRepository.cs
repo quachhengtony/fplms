@@ -18,11 +18,9 @@ namespace Repositories.Interfaces
         public Task<DateTime> GetSemesterStartDate(String code);
 
         public Task<bool> ExistsById(string code);
-         public Task<DateTime> GetSemesterStartDate(String code);
         public Task SaveAsync(Semester semester);
 
         public Task DeleteAsync(string code);
 
-        public Task<bool> ExistsByIdAsync(string code);
     }
 }
