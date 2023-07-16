@@ -4,6 +4,7 @@ using BusinessObjects.Models;
 using FPLMS.Api.Dto;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.Logging;
+using Repositories;
 using Repositories.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -32,17 +33,14 @@ namespace Api.Services.Meetings
         private const string UPDATE_MEETING_MESSAGE = "Update meeting: ";
         private const string DELETE_MEETING_MESSAGE = "Update meeting: ";
 
-        public MeetingService(IMeetingRepository meetingRepository, IClassRepository classRepository,
-            IStudentRepository studentRepository, ILecturerRepository lecturerRepository,
-            IStudentGroupRepository studentGroupRepository, IGroupRepository groupRepository,
-            ILogger<MeetingService> logger)
+        public MeetingService(ILogger<MeetingService> logger)
         {
-            _meetingRepository = meetingRepository;
-            _classRepository = classRepository;
-            _studentRepository = studentRepository;
-            _lecturerRepository = lecturerRepository;
-            _studentGroupRepository = studentGroupRepository;
-            _groupRepository = groupRepository;
+            _meetingRepository = MeetingRepository.Instance;
+            _classRepository = ClassRepository.Instance;
+            _studentRepository = StudentRepository.Instance;
+            _lecturerRepository = LecturerRepository.Instance;
+            _studentGroupRepository = StudentGroupRepository.Instance;
+            _groupRepository = GroupRepository.Instance;
             _logger = logger;
         }
 
@@ -53,22 +51,22 @@ namespace Api.Services.Meetings
             if (lecturerId <= 0 || meetingId <= 0)
             {
                 _logger.LogWarning("{0}{1}", GET_MEETING, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
-                return new ResponseDto<MeetingDto>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                return new ResponseDto<MeetingDto>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
             }
             if (!await _meetingRepository.ExistsById(meetingId))
             {
                 _logger.LogWarning("{0}{1}", GET_MEETING, ServiceMessage.ID_NOT_EXIST_MESSAGE);
-                return new ResponseDto<MeetingDto>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.ID_NOT_EXIST_MESSAGE);
+                return new ResponseDto<MeetingDto>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.ID_NOT_EXIST_MESSAGE };
             }
             var meeting = await _meetingRepository.FindOneByIdAsync(meetingId);
             if (!lecturerId.Equals(meeting.Group.Class.Lecturer.Id))
             {
                 _logger.LogWarning("{0}{1}", GET_MEETING, LECTURER_NOT_MANAGE);
-                return new ResponseDto<MeetingDto>(ServiceStatusCode.BAD_REQUEST_STATUS, LECTURER_NOT_MANAGE);
+                return new ResponseDto<MeetingDto>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = LECTURER_NOT_MANAGE };
             }
             var meetingDto = MapMeetingToDto(meeting);
             _logger.LogInformation("Get meeting detail success");
-            return new ResponseDto<MeetingDto>(ServiceStatusCode.OK_STATUS, ServiceMessage.SUCCESS_MESSAGE, meetingDto);
+            return new ResponseDto<MeetingDto>{ code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE, data = meetingDto };
         }
 
         public async Task<ResponseDto<MeetingDto>> GetMeetingDetailByStudentAsync(string userEmail, int meetingId)
@@ -78,22 +76,22 @@ namespace Api.Services.Meetings
             if (studentId <= 0 || meetingId <= 0)
             {
                 _logger.LogWarning("{0}{1}", GET_MEETING, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
-                return new ResponseDto<MeetingDto>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                return new ResponseDto<MeetingDto>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
             }
             if (!await _meetingRepository.ExistsById(meetingId))
             {
                 _logger.LogWarning("{0}{1}", GET_MEETING, ServiceMessage.ID_NOT_EXIST_MESSAGE);
-                return new ResponseDto<MeetingDto>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.ID_NOT_EXIST_MESSAGE);
+                return new ResponseDto<MeetingDto>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.ID_NOT_EXIST_MESSAGE };
             }
             var meeting = await _meetingRepository.FindOneByIdAsync(meetingId);
             if (await _studentGroupRepository.IsStudentExistInGroup(meeting.Group.Id, studentId) <= 0)
             {
                 _logger.LogWarning("{0}{1}", GET_MEETING, NOT_IN_GROUP);
-                return new ResponseDto<MeetingDto>(ServiceStatusCode.BAD_REQUEST_STATUS, NOT_IN_GROUP);
+                return new ResponseDto<MeetingDto>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = NOT_IN_GROUP };
             }
             var meetingDto = MapMeetingToDto(meeting);
             _logger.LogInformation("Get meeting detail success");
-            return new ResponseDto<MeetingDto>(ServiceStatusCode.OK_STATUS, ServiceMessage.SUCCESS_MESSAGE, meetingDto);
+            return new ResponseDto<MeetingDto>{ code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE, data = meetingDto };
         }
 
         public async Task<ResponseDto<HashSet<MeetingDto>>> GetMeetingInGroupByStudentAsync(int? classId, int? groupId, DateTimeOffset? startDate, DateTimeOffset? endDate, string userEmail)
@@ -106,7 +104,7 @@ namespace Api.Services.Meetings
             if (studentId <= 0)
             {
                 _logger.LogWarning("{0}{1}", GET_MEETING, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
-                return new ResponseDto<HashSet<MeetingDto>>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                return new ResponseDto<HashSet<MeetingDto>>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
             }
 
             HashSet<Meeting> meetingSet;
@@ -121,7 +119,7 @@ namespace Api.Services.Meetings
                 {
                     // Invalid case: classId != 0 && groupId == 0
                     _logger.LogWarning("{0}{1}", GET_MEETING, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
-                    return new ResponseDto<HashSet<MeetingDto>>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                    return new ResponseDto<HashSet<MeetingDto>>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
                 }
                 else
                 {
@@ -129,17 +127,17 @@ namespace Api.Services.Meetings
                     if (!await _groupRepository.ExistsById(groupId.Value) || !await _classRepository.ExistsByIdAsync(classId))
                     {
                         _logger.LogWarning("{0}{1}", GET_MEETING, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
-                        return new ResponseDto<HashSet<MeetingDto>>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                        return new ResponseDto<HashSet<MeetingDto>>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
                     }
                     if (await _groupRepository.IsGroupExistsInClassAsync(groupId.Value, classId.Value) == null)
                     {
                         _logger.LogWarning("{0}{1}", GET_MEETING, "Group is not exist in class.");
-                        return new ResponseDto<HashSet<MeetingDto>>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.ID_NOT_EXIST_MESSAGE);
+                        return new ResponseDto<HashSet<MeetingDto>>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.ID_NOT_EXIST_MESSAGE };
                     }
                     if (await _studentGroupRepository.IsStudentExistInGroup(groupId.Value, studentId) == 0)
                     {
                         _logger.LogWarning("{0}{1}", GET_MEETING, NOT_IN_GROUP);
-                        return new ResponseDto<HashSet<MeetingDto>>(ServiceStatusCode.BAD_REQUEST_STATUS, NOT_IN_GROUP);
+                        return new ResponseDto<HashSet<MeetingDto>>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = NOT_IN_GROUP };
                     }
                     meetingSet = (await _meetingRepository.FindByGroupIdAsync(groupId.Value, startDate.Value.UtcDateTime, endDate.Value.UtcDateTime)).ToHashSet();
                 }
@@ -148,12 +146,12 @@ namespace Api.Services.Meetings
             {
                 // Invalid case: classId == 0 && groupId != 0
                 _logger.LogWarning("{0}{1}", GET_MEETING, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
-                return new ResponseDto<HashSet<MeetingDto>>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                return new ResponseDto<HashSet<MeetingDto>>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
             }
 
             var meetingDtoSet = meetingSet.Select(m => MapMeetingToDto(m)).ToHashSet();
             _logger.LogInformation("Get meeting in group success.");
-            return new ResponseDto<HashSet<MeetingDto>>(ServiceStatusCode.OK_STATUS, ServiceMessage.SUCCESS_MESSAGE, meetingDtoSet);
+            return new ResponseDto<HashSet<MeetingDto>>{ code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE, data = meetingDtoSet };
         }
 
         public async Task<ResponseDto<HashSet<MeetingDto>>> GetMeetingInGroupByLecturerAsync(int? classId, int? groupId, DateTimeOffset? startDate, DateTimeOffset? endDate, string userEmail)
@@ -166,7 +164,7 @@ namespace Api.Services.Meetings
             if (lecturerId <= 0)
             {
                 _logger.LogWarning("{0}{1}", GET_MEETING, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
-                return new ResponseDto<HashSet<MeetingDto>>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                return new ResponseDto<HashSet<MeetingDto>>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
             }
 
             HashSet<Meeting> meetingSet;
@@ -180,12 +178,12 @@ namespace Api.Services.Meetings
                 if (!await _classRepository.ExistsByIdAsync(classId))
                 {
                     _logger.LogWarning("{0}{1}", GET_MEETING, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
-                    return new ResponseDto<HashSet<MeetingDto>>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                    return new ResponseDto<HashSet<MeetingDto>>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
                 }
                 if (!lecturerId.Equals((await _classRepository.FindOneByIdAsync(classId.Value)).Lecturer.Id))
                 {
                     _logger.LogWarning("{0}{1}", GET_MEETING, LECTURER_NOT_MANAGE);
-                    return new ResponseDto<HashSet<MeetingDto>>(ServiceStatusCode.BAD_REQUEST_STATUS, LECTURER_NOT_MANAGE);
+                    return new ResponseDto<HashSet<MeetingDto>>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = LECTURER_NOT_MANAGE };
                 }
                 if (groupId == null)
                 {
@@ -198,12 +196,12 @@ namespace Api.Services.Meetings
                     if (!await _groupRepository.ExistsById(groupId.Value))
                     {
                         _logger.LogWarning("{0}{1}", GET_MEETING, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
-                        return new ResponseDto<HashSet<MeetingDto>>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                        return new ResponseDto<HashSet<MeetingDto>>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
                     }
                     if (await _groupRepository.IsGroupExistsInClassAsync(groupId.Value, classId.Value) == null)
                     {
                         _logger.LogWarning("{0}{1}", GET_MEETING, "Group is not exist in class.");
-                        return new ResponseDto<HashSet<MeetingDto>>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.ID_NOT_EXIST_MESSAGE);
+                        return new ResponseDto<HashSet<MeetingDto>>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.ID_NOT_EXIST_MESSAGE };
                     }
                     meetingSet = (await _meetingRepository.FindByGroupIdAsync(groupId.Value, startDate.Value.UtcDateTime, endDate.Value.UtcDateTime)).ToHashSet();
                 }
@@ -212,12 +210,12 @@ namespace Api.Services.Meetings
             {
                 // Invalid case: classId == 0 && groupId != 0
                 _logger.LogWarning("{0}{1}", GET_MEETING, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
-                return new ResponseDto<HashSet<MeetingDto>>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                return new ResponseDto<HashSet<MeetingDto>>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
             }
 
             var meetingDtoSet = meetingSet.Select(m => MapMeetingToDto(m)).ToHashSet();
             _logger.LogInformation("Get meeting in group success.");
-            return new ResponseDto<HashSet<MeetingDto>>(ServiceStatusCode.OK_STATUS, ServiceMessage.SUCCESS_MESSAGE, meetingDtoSet);
+            return new ResponseDto<HashSet<MeetingDto>>{ code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE, data = meetingDtoSet };
         }
 
         public async Task<ResponseDto<MeetingDto>> ScheduleMeetingByLecturerAsync(MeetingDto meetingDto)
@@ -227,12 +225,12 @@ namespace Api.Services.Meetings
             if (meetingDto.GroupId == 0 || !(await _groupRepository.FindLectureIdOfGroupAsync(meetingDto.GroupId)).Equals(meetingDto.LecturerId))
             {
                 _logger.LogWarning("{0}{1}", SCHEDULING_MEETING_MESSAGE, ServiceMessage.FORBIDDEN_MESSAGE);
-                return new ResponseDto<MeetingDto>(ServiceStatusCode.FORBIDDEN_STATUS, ServiceMessage.FORBIDDEN_MESSAGE);
+                return new ResponseDto<MeetingDto>{ code = ServiceStatusCode.FORBIDDEN_STATUS, message = ServiceMessage.FORBIDDEN_MESSAGE };
             }
             if (string.IsNullOrEmpty(meetingDto.Title) || meetingDto.ScheduleTime == null || string.IsNullOrEmpty(meetingDto.Link))
             {
                 _logger.LogWarning("{0}{1}", SCHEDULING_MEETING_MESSAGE, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
-                return new ResponseDto<MeetingDto>(ServiceStatusCode.UNAUTHENTICATED_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                return new ResponseDto<MeetingDto>{ code = ServiceStatusCode.UNAUTHENTICATED_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
             }
             meetingDto.Id = 0;
             var meeting = MapDtoToMeeting(meetingDto);
@@ -240,7 +238,7 @@ namespace Api.Services.Meetings
             meeting.Group = new Group { Id = meetingDto.GroupId };
             meetingDto.Id = await _meetingRepository.SaveAsync(meeting);
             _logger.LogInformation("{0}{1}", SCHEDULING_MEETING_MESSAGE, ServiceMessage.SUCCESS_MESSAGE);
-            return new ResponseDto<MeetingDto>(ServiceStatusCode.OK_STATUS, ServiceMessage.SUCCESS_MESSAGE, meetingDto);
+            return new ResponseDto<MeetingDto>{ code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE, data = meetingDto };
         }
 
         public async Task<ResponseDto<object>> UpdateMeetingByLecturerAsync(MeetingDto meetingDto)
@@ -250,12 +248,12 @@ namespace Api.Services.Meetings
             if (!meetingDto.LecturerId.Equals(meeting.Lecturer.Id))
             {
                 _logger.LogWarning("{0}{1}", SCHEDULING_MEETING_MESSAGE, ServiceMessage.FORBIDDEN_MESSAGE);
-                return new ResponseDto<object>(ServiceStatusCode.FORBIDDEN_STATUS, ServiceMessage.FORBIDDEN_MESSAGE);
+                return new ResponseDto<object>{ code = ServiceStatusCode.FORBIDDEN_STATUS, message = ServiceMessage.FORBIDDEN_MESSAGE };
             }
             if (string.IsNullOrEmpty(meetingDto.Title) || meetingDto.ScheduleTime == null || string.IsNullOrEmpty(meetingDto.Link) || !meetingDto.GroupId.Equals(meeting.Group.Id))
             {
                 _logger.LogWarning("{0}{1}", SCHEDULING_MEETING_MESSAGE, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
-                return new ResponseDto<object>(ServiceStatusCode.UNAUTHENTICATED_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                return new ResponseDto<object>{ code = ServiceStatusCode.UNAUTHENTICATED_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
             }
             meeting.Feedback = meetingDto.Feedback;
             meeting.Link = meetingDto.Link;
@@ -263,7 +261,7 @@ namespace Api.Services.Meetings
             meeting.Title = meetingDto.Title;
             await _meetingRepository.SaveAsync(meeting);
             _logger.LogInformation("{0}{1}", UPDATE_MEETING_MESSAGE, ServiceMessage.SUCCESS_MESSAGE);
-            return new ResponseDto<object>(ServiceStatusCode.OK_STATUS, ServiceMessage.SUCCESS_MESSAGE);
+            return new ResponseDto<object>{ code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE };
         }
 
         public async Task<ResponseDto<object>> DeleteMeetingByLecturerAsync(int lectureId, int meetingId)
@@ -272,11 +270,11 @@ namespace Api.Services.Meetings
             if (!(await _meetingRepository.FindOneByIdAsync(meetingId)).LecturerId.Equals(lectureId))
             {
                 _logger.LogWarning("{0}{1}", SCHEDULING_MEETING_MESSAGE, ServiceMessage.FORBIDDEN_MESSAGE);
-                return new ResponseDto<object>(ServiceStatusCode.FORBIDDEN_STATUS, ServiceMessage.FORBIDDEN_MESSAGE);
+                return new ResponseDto<object>{ code = ServiceStatusCode.FORBIDDEN_STATUS, message = ServiceMessage.FORBIDDEN_MESSAGE };
             }
             await _meetingRepository.DeleteByIdAsync(meetingId);
             _logger.LogInformation("{0}{1}", DELETE_MEETING_MESSAGE, ServiceMessage.SUCCESS_MESSAGE);
-            return new ResponseDto<object>(ServiceStatusCode.OK_STATUS, ServiceMessage.SUCCESS_MESSAGE);
+            return new ResponseDto<object>{ code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE };
         }
 
         private MeetingDto MapMeetingToDto(Meeting meeting)

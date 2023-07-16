@@ -34,7 +34,7 @@ namespace Repositories
         public async Task<int> ExistsByLecturerId(int lecturerId, int projectId)
         {
             return await dbContext.Projects
-                .FromSqlRaw("SELECT * FROM PROJECT WHERE id = {1} AND LECTURER_id = {0} AND is_disable = 0", lecturerId, projectId)
+                .FromSqlRaw("SELECT * FROM project WHERE id = {1} AND LECTURER_id = {0} AND is_disable = 0", lecturerId, projectId)
                 .Select(p => p.Id)
                 .FirstOrDefaultAsync();
         }
@@ -42,7 +42,7 @@ namespace Repositories
         public async Task<int> ExistsById(int projectId)
         {
             return await dbContext.Projects
-                .FromSqlRaw("SELECT * FROM PROJECT WHERE id = {1} ", projectId)
+                .FromSqlRaw("SELECT * FROM project WHERE id = {1} ", projectId)
                 .Select(p => p.Id)
                 .FirstOrDefaultAsync();
         }
@@ -59,7 +59,7 @@ namespace Repositories
         public async Task<HashSet<Project>> FindByLecturerIdAndSemester(int lecturerId, string semesterCode)
         {
             var projects = await dbContext.Projects
-                .FromSqlRaw("SELECT * FROM PROJECT WHERE LECTURER_id = {0} AND SEMESTER_code = {1} AND is_disable = 0", lecturerId, semesterCode)
+                .FromSqlRaw("SELECT * FROM project WHERE LECTURER_id = {0} AND SEMESTER_code = {1} AND is_disable = 0", lecturerId, semesterCode)
                 .ToListAsync();
 
             return projects.ToHashSet();
@@ -68,7 +68,7 @@ namespace Repositories
         public async Task<HashSet<Project>> FindByLecturerId(int lecturerId)
         {
             var projects = await dbContext.Projects
-                .FromSqlRaw("SELECT * FROM PROJECT WHERE LECTURER_id = {0} AND is_disable = 0", lecturerId)
+                .FromSqlRaw("SELECT * FROM project WHERE LECTURER_id = {0} AND is_disable = 0", lecturerId)
                 .ToListAsync();
 
             return projects.ToHashSet();
@@ -76,7 +76,7 @@ namespace Repositories
 
         public async Task DeleteProject(int projectId)
         {
-            await dbContext.Database.ExecuteSqlInterpolatedAsync($"UPDATE PROJECT SET is_disable = 1 WHERE id = {projectId}");
+            await dbContext.Database.ExecuteSqlInterpolatedAsync($"UPDATE project SET is_disable = 1 WHERE id = {projectId}");
         }
 
 
