@@ -67,7 +67,7 @@ namespace Api.Services.Reports
                 Feedback = cycleReport.Feedback,
                 ResourceLink = cycleReport.ResourceLink,
                 Mark = cycleReport.Mark.Value,
-                GroupId = cycleReport.Group.Id
+                GroupId = cycleReport.GroupId
                 // Map other properties here
             };
         }
@@ -221,6 +221,40 @@ namespace Api.Services.Reports
             return await GetCycleReportInGroup(groupId);
         }
 
+        public async Task<ResponseDto<HashSet<CycleReportDTO>>> GetCycleReportInClassByLecturer(int classId, string userEmail)
+        {
+            _logger.LogInformation("GetCycleReportInClassByLecturer(classId: {classId}, userEmail: {userEmail})", classId, userEmail);
+
+            int? lecturerId = await _lecturerRepository.FindLecturerIdByEmailAsync(userEmail);
+            if (lecturerId == null || classId == null || !await _classRepository.ExistsByIdAsync(classId))
+            {
+                _logger.LogWarning("{GET_CYCLE_REPORT}{INVALID_ARGUMENT_MESSAGE}");
+                return new ResponseDto<HashSet<CycleReportDTO>> { code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
+            }
+            if (!lecturerId.Equals((await _classRepository.FindOneByIdAsync(classId)).LecturerId))
+            {
+                _logger.LogWarning("{GET_CYCLE_REPORT}{LECTURER_NOT_MANAGE}");
+                return new ResponseDto<HashSet<CycleReportDTO>> { code = ServiceStatusCode.BAD_REQUEST_STATUS, message = LECTURER_NOT_MANAGE };
+            }
+
+            var cycleReportSet = new HashSet<CycleReport>();
+
+            foreach (var group in (await _classRepository.FindOneByIdAsync(classId)).Groups)
+            {
+                cycleReportSet.UnionWith(group.CycleReports);
+            }
+
+            var cycleReportDtoSet = cycleReportSet.Select(cycleReportEntity =>
+            {
+                var dto = MapToCycleReportDTO(cycleReportEntity);
+                dto.GroupId = cycleReportEntity.Group.Id;
+                return dto;
+            }).ToHashSet();
+
+            _logger.LogInformation("Get cycle report from class success");
+            return new ResponseDto<HashSet<CycleReportDTO>> { code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE, data = cycleReportDtoSet };
+        }
+
         public async Task<ResponseDto<HashSet<CycleReportDTO>>> GetCycleReportInGroupByStudentAsync(int? groupId, string userEmail)
         {
             _logger.LogInformation("GetCycleReportInGroupByLecturerAsync( groupId: {groupId}, userEmail: {userEmail})", groupId, userEmail);
@@ -254,7 +288,7 @@ namespace Api.Services.Reports
             HashSet<CycleReportDTO> cycleReportDtoSet = cycleReportSet.Select(cycleReportEntity =>
             {
                 CycleReportDTO dto = MapToCycleReportDTO(cycleReportEntity);
-                dto.GroupId = cycleReportEntity.Group.Id;
+                dto.GroupId = cycleReportEntity.GroupId;
                 return dto;
             }).ToHashSet();
 

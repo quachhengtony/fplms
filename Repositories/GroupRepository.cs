@@ -149,9 +149,9 @@ namespace Repositories
             return;
         }
 
-        public Task<bool> ExistsById(int groupId)
+        public async Task<bool> ExistsById(int groupId)
         {
-            throw new NotImplementedException();
+            return await dbContext.Groups.AnyAsync(g => g.Id == groupId);
         }
     }
 }
