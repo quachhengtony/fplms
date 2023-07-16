@@ -12,24 +12,11 @@ namespace Repositories
 {
     public class GroupRepository : IGroupRepository
     {
-        private static GroupRepository instance;
-        private static readonly object instanceLock = new object();
-        private static FplmsManagementContext dbContext;
+        private FplmsManagementContext dbContext;
 
-        public static GroupRepository Instance
+        public GroupRepository()
         {
-            get
-            {
-                lock (instanceLock)
-                {
-                    if (instance == null)
-                    {
-                        dbContext = new FplmsManagementContext();
-                        instance = new GroupRepository();
-                    }
-                    return instance;
-                }
-            }
+            dbContext = new FplmsManagementContext();
         }
 
         public Task<int> ExistByProjectAsync(int projectId)

@@ -12,24 +12,11 @@ namespace Repositories
 {
     public class ProgressReportRepository : IProgressReportRepository
     {
-        private static ProgressReportRepository? instance;
-        private static readonly object instanceLock = new object();
-        private static FplmsManagementContext? dbContext;
+        private FplmsManagementContext dbContext;
 
-        public static ProgressReportRepository Instance
+        public ProgressReportRepository()
         {
-            get
-            {
-                lock (instanceLock)
-                {
-                    if (instance == null)
-                    {
-                        dbContext = new FplmsManagementContext();
-                        instance = new ProgressReportRepository();
-                    }
-                    return instance;
-                }
-            }
+            dbContext = new FplmsManagementContext();
         }
         public async Task<HashSet<ProgressReport>> FindByGroup(Group group)
         {

@@ -13,24 +13,11 @@ namespace Repositories
 {
     public class LecturerRepository : ILecturerRepository
     {
-        private static LecturerRepository instance;
-        private static readonly object instanceLock = new object();
-        private static FplmsManagementContext dbContext;
+        private FplmsManagementContext dbContext;
 
-        public static LecturerRepository Instance
+        public LecturerRepository()
         {
-            get
-            {
-                lock (instanceLock)
-                {
-                    if (instance == null)
-                    {
-                        dbContext = new FplmsManagementContext();
-                        instance = new LecturerRepository();
-                    }
-                    return instance;
-                }
-            }
+            dbContext = new FplmsManagementContext();
         }
 
         public Task<int> ExistsByEmailAsync(string lecturerEmail)

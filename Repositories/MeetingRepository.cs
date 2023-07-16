@@ -13,24 +13,11 @@ namespace Repositories
 {
     public class MeetingRepository : IMeetingRepository
     {
-        private static MeetingRepository instance;
-        private static readonly object instanceLock = new object();
-        private static FplmsManagementContext dbContext;
+        private FplmsManagementContext dbContext;
 
-        public static MeetingRepository Instance
+        public MeetingRepository()
         {
-            get
-            {
-                lock (instanceLock)
-                {
-                    if (instance == null)
-                    {
-                        dbContext = new FplmsManagementContext();
-                        instance = new MeetingRepository();
-                    }
-                    return instance;
-                }
-            }
+            dbContext = new FplmsManagementContext();
         }
 
         public Task<List<Meeting>> FindByGroupIdAsync(int groupId, DateTime startDate, DateTime endDate)

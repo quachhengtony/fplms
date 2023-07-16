@@ -31,16 +31,18 @@ namespace Api.Services.Projects
         private const string DELETE_PROJECT = "Delete project in class: ";
 
         public ProjectService(
-            ILogger<ProjectService> logger, IClassRepository classRepo)
+    ILogger<ProjectService> logger, IProjectRepository projectRepository, IClassRepository classRepository,
+    IGroupRepository groupRepository, IStudentRepository studentRepository, ILecturerRepository lecturerRepository,
+    ISubjectRepository subjectRepository, ISemesterRepository semesterRepository)
         {
             _logger = logger;
-            _projectRepository = ProjectRepository.Instance;
-            _classRepository = classRepo;
-            _groupRepository = GroupRepository.Instance;
-            _studentRepository = StudentRepository.Instance;
-            _lecturerRepository = LecturerRepository.Instance;
-            _subjectRepository = SubjectRepository.Instance;
-            _semesterRepository = SemesterRepository.Instance;
+            _projectRepository = projectRepository;
+            _classRepository = classRepository;
+            _groupRepository = groupRepository;
+            _studentRepository = studentRepository;
+            _lecturerRepository = lecturerRepository;
+            _subjectRepository = subjectRepository;
+            _semesterRepository = semesterRepository;
         }
 
         public async Task<ResponseDto<HashSet<ProjectDto>>> GetProjectFromClassByStudentAsync(int classId, string userEmail)

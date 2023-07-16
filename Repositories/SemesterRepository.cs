@@ -12,24 +12,11 @@ namespace Repositories
 {
     public class SemesterRepository : ISemesterRepository
     {
-        private static SemesterRepository? instance;
-        private static readonly object instanceLock = new object();
-        private static FplmsManagementContext? dbContext;
+        private FplmsManagementContext dbContext;
 
-        public static SemesterRepository Instance
+        public SemesterRepository()
         {
-            get
-            {
-                lock (instanceLock)
-                {
-                    if (instance == null)
-                    {
-                        dbContext = new FplmsManagementContext();
-                        instance = new SemesterRepository();
-                    }
-                    return instance;
-                }
-            }
+            dbContext = new FplmsManagementContext();
         }
 
         public async Task<HashSet<Semester>> GetSemester(string code)

@@ -13,24 +13,11 @@ namespace Repositories
 {
     public class StudentGroupRepository :IStudentGroupRepository
     {
-        private static StudentGroupRepository? instance;
-        private static readonly object instanceLock = new object();
-        private static FplmsManagementContext? dbContext;
+        private FplmsManagementContext dbContext;
 
-        public static StudentGroupRepository Instance
+        public StudentGroupRepository()
         {
-            get
-            {
-                lock (instanceLock)
-                {
-                    if (instance == null)
-                    {
-                        dbContext = new FplmsManagementContext();
-                        instance = new StudentGroupRepository();
-                    }
-                    return instance;
-                }
-            }
+            dbContext = new FplmsManagementContext();
         }
 
         public async Task DeleteStudentInGroup(int studentId, int classId)

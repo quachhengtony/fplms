@@ -13,24 +13,11 @@ namespace Repositories
 {
     public class SubjectRepository : ISubjectRepository
     {
-        private static SubjectRepository? instance;
-        private static readonly object instanceLock = new object();
-        private static FplmsManagementContext? dbContext;
+        private FplmsManagementContext dbContext;
 
-        public static SubjectRepository Instance
+        public SubjectRepository()
         {
-            get
-            {
-                lock (instanceLock)
-                {
-                    if (instance == null)
-                    {
-                        dbContext = new FplmsManagementContext();
-                        instance = new SubjectRepository();
-                    }
-                    return instance;
-                }
-            }
+            dbContext = new FplmsManagementContext();
         }
         public async Task<bool> ExistsByName(string name)
         {

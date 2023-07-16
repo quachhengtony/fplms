@@ -11,24 +11,11 @@ namespace Repositories
 {
     public class ProjectRepository : IProjectRepository
     {
-        private static ProjectRepository instance;
-        private static readonly object instanceLock = new object();
-        private static FplmsManagementContext dbContext;
+        private FplmsManagementContext dbContext;
 
-        public static ProjectRepository Instance
+        public ProjectRepository()
         {
-            get
-            {
-                lock (instanceLock)
-                {
-                    if (instance == null)
-                    {
-                        dbContext = new FplmsManagementContext();
-                        instance = new ProjectRepository();
-                    }
-                    return instance;
-                }
-            }
+            dbContext = new FplmsManagementContext();
         }
 
         public async Task<int> ExistsByLecturerId(int lecturerId, int projectId)

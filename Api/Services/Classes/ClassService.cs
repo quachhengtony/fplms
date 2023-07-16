@@ -27,18 +27,19 @@ namespace Api.Services.Classes
         private readonly ISemesterRepository _semesterRepo;
         private readonly ILogger<ClassService> _logger;
 
-        public ClassService(IGroupService groupService, ILogger<ClassService> logger, IClassRepository classRepo)
+        public ClassService(IGroupService groupService, ILogger<ClassService> logger, IClassRepository classRepo, IStudentGroupRepository studentGroupRepo,
+    IStudentRepository studentRepo, ISubjectRepository subjectRepo, IGroupRepository groupRepo, ILecturerRepository lecturerRepo,
+    ISemesterRepository semesterRepo)
         {
             _classRepo = classRepo;
-            _studentGroupRepo = StudentGroupRepository.Instance;
-            _studentRepo = StudentRepository.Instance;
-            _subjectRepo = SubjectRepository.Instance;
-            _groupRepo = GroupRepository.Instance;
-            _lecturerRepo = LecturerRepository.Instance;
-            _semesterRepo = SemesterRepository.Instance;
+            _studentGroupRepo = studentGroupRepo;
+            _studentRepo = studentRepo;
+            _subjectRepo = subjectRepo;
+            _groupRepo = groupRepo;
+            _lecturerRepo = lecturerRepo;
+            _semesterRepo = semesterRepo;
             _groupService = groupService;
             _logger = logger;
-
         }
 
         public Task<ResponseDto<object>> ChangeStudentGroupByLecturer(int classId, int studentId, int groupNumber, string lecturerEmail)

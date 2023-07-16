@@ -12,24 +12,13 @@ namespace Repositories
 {
     public class CycleReportRepository : ICycleReportRepository
     {
-        private static CycleReportRepository instance;
-        private static readonly object instanceLock = new object();
-        private static FplmsManagementContext dbContext;
 
-        public static CycleReportRepository Instance
+
+        private FplmsManagementContext dbContext;
+
+        public CycleReportRepository()
         {
-            get
-            {
-                lock (instanceLock)
-                {
-                    if (instance == null)
-                    {
-                        dbContext = new FplmsManagementContext();
-                        instance = new CycleReportRepository();
-                    }
-                    return instance;
-                }
-            }
+            dbContext = new FplmsManagementContext();
         }
 
         public Task<int> AddFeedbackAsync(int reportId, string feedback, float mark)

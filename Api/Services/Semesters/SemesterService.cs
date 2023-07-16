@@ -18,11 +18,10 @@ namespace Api.Services.Semesters
         private readonly IClassRepository _classRepository;
         private readonly ILogger<SemesterService> _logger;
         private const string SEMESTER_HAS_ASSOCIATED_CLASSES_MESSAGE = "Semester still has class";
-        public SemesterService(
-            ILogger<SemesterService> logger, IClassRepository classRepo)
+        public SemesterService(ILogger<SemesterService> logger, ISemesterRepository semesterRepository, IClassRepository classRepository)
         {
-            _semesterRepository = SemesterRepository.Instance;
-            _classRepository = classRepo;
+            _semesterRepository = semesterRepository;
+            _classRepository = classRepository;
             _logger = logger;
         }
 

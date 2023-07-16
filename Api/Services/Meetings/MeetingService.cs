@@ -33,14 +33,16 @@ namespace Api.Services.Meetings
         private const string UPDATE_MEETING_MESSAGE = "Update meeting: ";
         private const string DELETE_MEETING_MESSAGE = "Update meeting: ";
 
-        public MeetingService(ILogger<MeetingService> logger, IClassRepository classRepo)
+        public MeetingService(ILogger<MeetingService> logger, IMeetingRepository meetingRepository, IClassRepository classRepository,
+    IStudentRepository studentRepository, ILecturerRepository lecturerRepository, IStudentGroupRepository studentGroupRepository,
+    IGroupRepository groupRepository)
         {
-            _meetingRepository = MeetingRepository.Instance;
-            _classRepository = classRepo;
-            _studentRepository = StudentRepository.Instance;
-            _lecturerRepository = LecturerRepository.Instance;
-            _studentGroupRepository = StudentGroupRepository.Instance;
-            _groupRepository = GroupRepository.Instance;
+            _meetingRepository = meetingRepository;
+            _classRepository = classRepository;
+            _studentRepository = studentRepository;
+            _lecturerRepository = lecturerRepository;
+            _studentGroupRepository = studentGroupRepository;
+            _groupRepository = groupRepository;
             _logger = logger;
         }
 

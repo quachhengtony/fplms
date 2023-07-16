@@ -12,25 +12,7 @@ namespace Repositories
 {
     public class ClassRepository : IClassRepository
     {
-        private static ClassRepository instance;
-        private static readonly object instanceLock = new object();
         private FplmsManagementContext dbContext;
-
-        //public static ClassRepository Instance
-        //{
-        //    get
-        //    {
-        //        lock (instanceLock)
-        //        {
-        //            if (instance == null)
-        //            {
-        //                dbContext = new FplmsManagementContext();
-        //                instance = new ClassRepository();
-        //            }
-        //            return instance;
-        //        }
-        //    }
-        //}
 
         public ClassRepository() {
             dbContext = new FplmsManagementContext();
