@@ -34,7 +34,7 @@ namespace Repositories
 
         public async Task<HashSet<Semester>> GetSemester(string code)
         {
-            var semesters = await dbContext.Semesters.FromSqlRaw("SELECT * FROM SEMESTER WHERE code LIKE {0}", code).ToListAsync();
+            var semesters = await dbContext.Semesters.FromSqlRaw("SELECT * FROM semester WHERE code LIKE {0}", code).ToListAsync();
             return semesters.ToHashSet();
         }
 
