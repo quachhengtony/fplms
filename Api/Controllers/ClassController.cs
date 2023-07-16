@@ -31,9 +31,10 @@ public class ClassController : ControllerBase
         _logger = logger;
     }
 
-    [HttpPost]
+    [HttpPost, Authorize(Roles = "Lecturer")]
     public Task<ResponseDto<int>> CreateClassByLecturer([FromBody] ClassDto classDTO, [FromQuery] string userEmail) {
-
+        string userEmail = (string)HttpContext.Items["userEmail"]!;
+        string userRole = (string)HttpContext.Items["userRole"]!;
         return _classService.CreateClassByLecturer(classDTO, userEmail);
     }
 
