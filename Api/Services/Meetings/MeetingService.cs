@@ -218,7 +218,7 @@ namespace Api.Services.Meetings
             return new ResponseDto<HashSet<MeetingDto>>{ code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE, data = meetingDtoSet };
         }
 
-        public async Task<ResponseDto<MeetingDto>> ScheduleMeetingByLecturerAsync(MeetingDto meetingDto)
+        public async Task<ResponseDto<MeetingDto>> ScheduleMeetingByLecturerAsync(MeetingDto meetingDto, string userEmail)
         {
             _logger.LogInformation("{0}{1}", SCHEDULING_MEETING_MESSAGE, meetingDto);
             // Check whether the group is in the class of the lecturer
@@ -236,12 +236,13 @@ namespace Api.Services.Meetings
             var meeting = MapDtoToMeeting(meetingDto);
             meeting.Lecturer = new Lecturer { Id = meetingDto.LecturerId };
             meeting.Group = new Group { Id = meetingDto.GroupId };
+            meeting.LecturerId = await _lecturerRepository.FindLecturerIdByEmailAsync(userEmail);
             meetingDto.Id = await _meetingRepository.SaveAsync(meeting);
             _logger.LogInformation("{0}{1}", SCHEDULING_MEETING_MESSAGE, ServiceMessage.SUCCESS_MESSAGE);
             return new ResponseDto<MeetingDto>{ code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE, data = meetingDto };
         }
 
-        public async Task<ResponseDto<object>> UpdateMeetingByLecturerAsync(MeetingDto meetingDto)
+        public async Task<ResponseDto<object>> UpdateMeetingByLecturerAsync(MeetingDto meetingDto, string userEmail)
         {
             _logger.LogInformation("{0}{1}", UPDATE_MEETING_MESSAGE, meetingDto);
             var meeting = await _meetingRepository.FindOneByIdAsync(meetingDto.Id);
@@ -259,14 +260,16 @@ namespace Api.Services.Meetings
             meeting.Link = meetingDto.Link;
             meeting.ScheduleTime = meetingDto.ScheduleTime;
             meeting.Title = meetingDto.Title;
+            meeting.LecturerId = await _lecturerRepository.FindLecturerIdByEmailAsync(userEmail);
             await _meetingRepository.SaveAsync(meeting);
             _logger.LogInformation("{0}{1}", UPDATE_MEETING_MESSAGE, ServiceMessage.SUCCESS_MESSAGE);
             return new ResponseDto<object>{ code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE };
         }
 
-        public async Task<ResponseDto<object>> DeleteMeetingByLecturerAsync(int lectureId, int meetingId)
+        public async Task<ResponseDto<object>> DeleteMeetingByLecturerAsync(string userEmail, int meetingId)
         {
             _logger.LogInformation("{0}{1}", DELETE_MEETING_MESSAGE, meetingId);
+            int lectureId = await _lecturerRepository.FindLecturerIdByEmailAsync(userEmail);
             if (!(await _meetingRepository.FindOneByIdAsync(meetingId)).LecturerId.Equals(lectureId))
             {
                 _logger.LogWarning("{0}{1}", SCHEDULING_MEETING_MESSAGE, ServiceMessage.FORBIDDEN_MESSAGE);

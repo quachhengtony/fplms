@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FPLMS.Api.Dto;
+using FPLMS.Api.Enum;
 using FPLMS.Api.Filters;
 using global::Api.Dto.Request;
 using global::Api.Dto.Response;
@@ -34,9 +35,9 @@ public class GroupController : ControllerBase
 	[HttpGet]
 	public Task<ResponseDto<HashSet<GroupDetailResponseDto>>> GetGroupOfClass(int classId, [FromQuery] string userEmail, [FromQuery] string userRole)
 	{
-		if (userRole == "LECTURER")
+		if (userRole == RoleTypes.Lecturer)
 			return _groupService.GetGroupOfClassByLecturer(classId, userEmail);
-		if (userRole == "STUDENT")
+		if (userRole == RoleTypes.Student)
 			return _groupService.GetGroupOfClassByStudent(classId, userEmail);
 		return Task.FromResult(new ResponseDto<HashSet<GroupDetailResponseDto>> { code = 403, message = "Not have role access" });
 	}
