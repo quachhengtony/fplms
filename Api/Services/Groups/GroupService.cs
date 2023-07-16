@@ -326,7 +326,7 @@ namespace Api.Services.Groups
                     Context = group.Project.Context,
                     SemesterCode = group.Project.SemesterCode,
                     Problem = group.Project.Problem,
-                    SubjectId = group.Project.SubjectId
+                    SubjectId = group.Project.SubjectId.Value
                 };
             }
 

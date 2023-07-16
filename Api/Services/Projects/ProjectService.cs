@@ -235,7 +235,7 @@ namespace Api.Services.Projects
                 Actors = projectEntity.Actors,
                 Requirements = projectEntity.Requirements,
                 Theme = projectEntity.Theme,
-                SubjectId = projectEntity.SubjectId,
+                SubjectId = projectEntity.SubjectId.Value,
                 SemesterCode = projectEntity.SemesterCode,
                 Context = projectEntity.Context
                 // Map other properties

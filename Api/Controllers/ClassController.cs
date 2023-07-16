@@ -32,7 +32,7 @@ public class ClassController : ControllerBase
     }
 
     [HttpPost, Authorize(Roles = "Lecturer")]
-    public Task<ResponseDto<int>> CreateClassByLecturer([FromBody] ClassDto classDTO, [FromQuery] string userEmail) {
+    public Task<ResponseDto<int>> CreateClassByLecturer([FromBody] ClassDto classDTO) {
         string userEmail = (string)HttpContext.Items["userEmail"]!;
         string userRole = (string)HttpContext.Items["userRole"]!;
         return _classService.CreateClassByLecturer(classDTO, userEmail);
@@ -49,8 +49,9 @@ public class ClassController : ControllerBase
         return _classService.DeleteClassByLecturer(classId, userEmail);
     }
 
-    [HttpGet]
-    public Task<ResponseDto<HashSet<ClassDto>>> GetClassOfLecturer([FromQuery] string userEmail) {
+    [HttpGet, Authorize(Roles = "Lecturer")]
+    public Task<ResponseDto<HashSet<ClassDto>>> GetClassOfLecturer() {
+        string userEmail = (string)HttpContext.Items["userEmail"]!;
         return _classService.GetClassOfLecture(userEmail);
     }
 

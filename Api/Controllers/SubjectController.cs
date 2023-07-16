@@ -26,7 +26,7 @@ public class SubjectController : ControllerBase
         _logger = logger;
     }
 
-	[HttpGet]
+	[HttpGet, Authorize(Roles = "Lecturer, Student")]
 	public Task<ResponseDto<HashSet<SubjectDto>>> GetSubjects()
 	{
 		return _subjectService.GetSubjects();
