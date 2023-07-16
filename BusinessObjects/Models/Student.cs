@@ -5,6 +5,12 @@ namespace BusinessObjects.Models;
 
 public partial class Student
 {
+
+    public Student(int id)
+    {
+        this.Id = id;
+    }
+
     public int Id { get; set; }
 
     public string Code { get; set; } = null!;

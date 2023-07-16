@@ -1,10 +1,12 @@
-public record StudentInClassResponseDto
+using Api.Dto.Shared;
+
+namespace Api.Dto.Response
 {
-    public int id { get; set; }
-    public string name { get; set; }
-    public string email { get; set; }
-    public string code { get; set; }
-    public int groupId { get; set; }
-    public int groupNumber { get; set; }
-    public bool isLeader { get; set; }
+    public class StudentInClassResponseDto : StudentDto
+    {
+        public int GroupId { get; set; }
+        public int GroupNumber { get; set; }
+        public bool IsLeader { get; set; }
+    }
 }
+
