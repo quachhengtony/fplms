@@ -110,12 +110,17 @@ namespace Repositories
 
         public Task<int> SetGroupDisableAsync(int groupId)
         {
-            return dbContext.Database.ExecuteSqlRawAsync($"update `group` set is_disable = 1 where id = {groupId}");
+            dbContext.Database.ExecuteSqlRawAsync($"update `group` set is_disable = 1 where id = {groupId}");
+            dbContext.SaveChanges();
+            return Task.FromResult(1);
         }
 
         public Task<int> SetGroupEnableAsync(int groupId)
         {
-            return dbContext.Database.ExecuteSqlRawAsync($"update `group` set is_disable = 0 where id = {groupId}");
+            dbContext.Database.ExecuteSqlRawAsync($"update `group` set is_disable = 0 where id = {groupId}");
+            dbContext.SaveChanges();
+            return Task.FromResult(1);
+
         }
 
         public Task<int> UpdateProjectInGroupAsync(int groupId, int projectId)

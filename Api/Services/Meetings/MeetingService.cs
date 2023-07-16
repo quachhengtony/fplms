@@ -33,10 +33,10 @@ namespace Api.Services.Meetings
         private const string UPDATE_MEETING_MESSAGE = "Update meeting: ";
         private const string DELETE_MEETING_MESSAGE = "Update meeting: ";
 
-        public MeetingService(ILogger<MeetingService> logger)
+        public MeetingService(ILogger<MeetingService> logger, IClassRepository classRepo)
         {
             _meetingRepository = MeetingRepository.Instance;
-            _classRepository = ClassRepository.Instance;
+            _classRepository = classRepo;
             _studentRepository = StudentRepository.Instance;
             _lecturerRepository = LecturerRepository.Instance;
             _studentGroupRepository = StudentGroupRepository.Instance;

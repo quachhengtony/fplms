@@ -14,26 +14,30 @@ namespace Repositories
     {
         private static ClassRepository instance;
         private static readonly object instanceLock = new object();
-        private static FplmsManagementContext dbContext;
+        private FplmsManagementContext dbContext;
 
-        public static ClassRepository Instance
-        {
-            get
-            {
-                lock (instanceLock)
-                {
-                    if (instance == null)
-                    {
-                        dbContext = new FplmsManagementContext();
-                        instance = new ClassRepository();
-                    }
-                    return instance;
-                }
-            }
+        //public static ClassRepository Instance
+        //{
+        //    get
+        //    {
+        //        lock (instanceLock)
+        //        {
+        //            if (instance == null)
+        //            {
+        //                dbContext = new FplmsManagementContext();
+        //                instance = new ClassRepository();
+        //            }
+        //            return instance;
+        //        }
+        //    }
+        //}
+
+        public ClassRepository() {
+            dbContext = new FplmsManagementContext();
         }
 
 
-        public Task<int> DeleteStudentInClassAsync(int studentId, int classId)
+    public Task<int> DeleteStudentInClassAsync(int studentId, int classId)
         {
             return dbContext.Database.ExecuteSqlRawAsync($"DELETE FROM student_class WHERE STUDENT_id = {studentId} AND CLASS_id = {classId}");
         }

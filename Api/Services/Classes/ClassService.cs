@@ -27,9 +27,9 @@ namespace Api.Services.Classes
         private readonly ISemesterRepository _semesterRepo;
         private readonly ILogger<ClassService> _logger;
 
-        public ClassService(IGroupService groupService, ILogger<ClassService> logger)
+        public ClassService(IGroupService groupService, ILogger<ClassService> logger, IClassRepository classRepo)
         {
-            _classRepo = ClassRepository.Instance;
+            _classRepo = classRepo;
             _studentGroupRepo = StudentGroupRepository.Instance;
             _studentRepo = StudentRepository.Instance;
             _subjectRepo = SubjectRepository.Instance;

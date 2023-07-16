@@ -19,6 +19,8 @@ using Api.Services.Projects;
 using Api.Services.Semesters;
 using Api.Services.Reports;
 using Api.Services.Meetings;
+using Repositories.Interfaces;
+using Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +35,7 @@ builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<ISemesterService, SemesterService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IMeetingService, MeetingService>();
+builder.Services.AddScoped<IClassRepository, ClassRepository>();
 builder.Services.AddScoped<ValidationFilterAttribute>();
 builder.Services.AddHttpLogging(options =>
 {

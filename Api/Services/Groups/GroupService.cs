@@ -26,9 +26,9 @@ namespace Api.Services.Groups
         private const string GROUP_DISABLE = "Group is disable";
         private const string REMOVE_STUDENT_FROM_GROUP_MESSAGE = "Remove student from group: ";
 
-        public GroupService(ILogger<GroupService> logger)
+        public GroupService(ILogger<GroupService> logger, IClassRepository classRepo)
         {
-            _classRepo = ClassRepository.Instance;
+            _classRepo = classRepo;
             _studentRepo = StudentRepository.Instance;
             _studentGroupRepo = StudentGroupRepository.Instance;
             _groupRepo = GroupRepository.Instance;

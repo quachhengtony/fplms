@@ -44,11 +44,11 @@ namespace Api.Services.Reports
         private const string GET_PROGRESS_REPORT = "Get progress report: ";
         private const string FEEDBACK_CYCLE_REPORT = "Feedback cycle report: ";
         public ReportService(
-            ILogger<ReportService> logger)
+            ILogger<ReportService> logger, IClassRepository classRepo)
         {
             _logger = logger;
             _cycleReportRepository = CycleReportRepository.Instance;
-            _classRepository = ClassRepository.Instance;
+            _classRepository = classRepo;
             _groupRepository = GroupRepository.Instance;
             _studentGroupRepository = StudentGroupRepository.Instance;
             _studentRepository = StudentRepository.Instance;

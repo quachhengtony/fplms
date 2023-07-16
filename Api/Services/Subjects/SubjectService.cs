@@ -19,10 +19,10 @@ namespace Api.Services.Subjects
         private readonly IStudentRepository _studentRepo;
         private readonly ILogger<SubjectService> _logger;
 
-        public SubjectService(ILogger<SubjectService> logger)
+        public SubjectService(ILogger<SubjectService> logger, IClassRepository classRepo)
         {
             _subjectRepo = SubjectRepository.Instance;
-            _classRepo = ClassRepository.Instance;
+            _classRepo = classRepo;
             _studentRepo = StudentRepository.Instance;
             _logger = logger;
         }

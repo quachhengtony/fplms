@@ -31,11 +31,11 @@ namespace Api.Services.Projects
         private const string DELETE_PROJECT = "Delete project in class: ";
 
         public ProjectService(
-            ILogger<ProjectService> logger)
+            ILogger<ProjectService> logger, IClassRepository classRepo)
         {
             _logger = logger;
             _projectRepository = ProjectRepository.Instance;
-            _classRepository = ClassRepository.Instance;
+            _classRepository = classRepo;
             _groupRepository = GroupRepository.Instance;
             _studentRepository = StudentRepository.Instance;
             _lecturerRepository = LecturerRepository.Instance;
