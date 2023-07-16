@@ -8,6 +8,9 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using System;
 using Api.Services.Students;
+using FPLMS.Api.Enum;
+using Microsoft.AspNetCore.Authorization;
+using System.Data;
 
 namespace Api.Controllers
 {
@@ -24,21 +27,21 @@ namespace Api.Controllers
             _studentService = studentService;
         }
 
-        [HttpGet("cycle-reports")]
+        [HttpGet("cycle-reports"), Authorize(Roles = "Lecturer,Student")]
         public async Task<ActionResult<ResponseDto<HashSet<CycleReportDTO>>>> GetCycleReport(
             [FromQuery] int? classId,
             [FromQuery] int? groupId)
         {
-            var userEmail = User.FindFirstValue("email");
-            var userRole = User.FindFirstValue("role");
+            var userEmail = (string)HttpContext.Items["userEmail"]!;
+            var userRole = (string)HttpContext.Items["userRole"]!;
 
-            if (userRole.Contains("LECTURER"))
+            if (userRole.Contains(RoleTypes.Lecturer))
             {
                 var response = await _reportService.GetCycleReportInGroupByLecturerAsync(groupId, userEmail);
                 return Ok(response);
             }
 
-            if (userRole.Contains("STUDENT"))
+            if (userRole.Contains(RoleTypes.Student))
             {
                 var response = await _reportService.GetCycleReportInGroupByStudentAsync(groupId, userEmail);
                 return Ok(response);
@@ -47,19 +50,19 @@ namespace Api.Controllers
             return StatusCode(403, "Not have role access");
         }
 
-        [HttpGet("cycle-reports/{reportId}")]
+        [HttpGet("cycle-reports/{reportId}"), Authorize(Roles = "Lecturer,Student")]
         public async Task<ActionResult<ResponseDto<CycleReportDTO>>> GetCycleReportById(int reportId)
         {
-            var userEmail = User.FindFirstValue("email");
-            var userRole = User.FindFirstValue("role");
+            var userEmail = (string)HttpContext.Items["userEmail"]!;
+            var userRole = (string)HttpContext.Items["userRole"]!;
 
-            if (userRole.Contains("LECTURER"))
+            if (userRole.Contains(RoleTypes.Lecturer))
             {
                 var response = await _reportService.GetCycleReportDetailByLecturerAsync(userEmail, reportId);
                 return Ok(response);
             }
 
-            if (userRole.Contains("STUDENT"))
+            if (userRole.Contains(RoleTypes.Student))
             {
                 var response = await _reportService.GetCycleReportDetailByStudentAsync(userEmail, reportId);
                 return Ok(response);
@@ -68,53 +71,53 @@ namespace Api.Controllers
             return StatusCode(403, "Not have role access");
         }
 
-        [HttpPost("cycle-reports")]
+        [HttpPost("cycle-reports"), Authorize(Roles = "Student")]
         public async Task<ActionResult<ResponseDto<CycleReportDTO>>> AddCycleReport(
             [FromBody] CreateCycleReportRequest createCycleReportRequest)
         {
-            var userEmail = User.FindFirstValue("email");
+            var userEmail = (string)HttpContext.Items["userEmail"]!;
             var studentId = await _studentService.GetStudentIdByEmail(userEmail);
             var response = await _reportService.AddCycleReportAsync(createCycleReportRequest, studentId);
             return Ok(response);
         }
 
-        [HttpPut("cycle-reports")]
+        [HttpPut("cycle-reports"), Authorize(Roles = "Student")]
         public async Task<ActionResult<ResponseDto<CycleReportDTO>>> UpdateCycleReport(
             [FromBody] UpdateCycleReportRequest updateCycleReportRequest)
         {
-            var userEmail = User.FindFirstValue("email");
+            var userEmail = (string)HttpContext.Items["userEmail"]!;
             var studentId = await _studentService.GetStudentIdByEmail(userEmail);
             var response = await _reportService.UpdateCycleReport(updateCycleReportRequest, studentId);
             return Ok(response);
         }
 
-        [HttpDelete("cycle-reports/{reportId}")]
+        [HttpDelete("cycle-reports/{reportId}"), Authorize(Roles = "Student")]
         public async Task<ActionResult<ResponseDto<object>>> DeleteCycleReport(int groupId, int reportId)
         {
-            var userEmail = User.FindFirstValue("email");
+            var userEmail = (string)HttpContext.Items["userEmail"]!;
             var studentId = await _studentService.GetStudentIdByEmail(userEmail);
             var response = await _reportService.DeleteCycleReport(groupId, reportId, studentId);
             return Ok(response);
         }
 
-        [HttpGet("progress-reports")]
+        [HttpGet("progress-reports"), Authorize(Roles = "Lecturer,Student")]
         public async Task<ActionResult<ResponseDto<HashSet<ProgressReportDTO>>>> GetProgressReportFromGroup(
             [FromQuery] int classId,
             [FromQuery] int groupId,
             [FromQuery] DateTime? startDate,
             [FromQuery] DateTime? endDate)
         {
-            var userEmail = User.FindFirstValue("email");
-            var userRole = User.FindFirstValue("role");
+            var userEmail = (string)HttpContext.Items["userEmail"]!;
+            var userRole = (string)HttpContext.Items["userRole"]!;
 
-            if (userRole.Contains("LECTURER"))
+            if (userRole.Contains(RoleTypes.Lecturer))
             {
                 var response = await _reportService.GetProgressReportInGroupByLecturerAsync(
                     classId, groupId, startDate.Value, endDate.Value, userEmail);
                 return Ok(response);
             }
 
-            if (userRole.Contains("STUDENT"))
+            if (userRole.Contains(RoleTypes.Student))
             {
                 var response = await _reportService.GetProgressReportInGroupByStudentAsync(
                     classId, groupId, startDate.Value, endDate.Value, userEmail);
@@ -124,19 +127,19 @@ namespace Api.Controllers
             return StatusCode(403, "Not have role access");
         }
 
-        [HttpGet("progress-reports/{reportId}")]
+        [HttpGet("progress-reports/{reportId}"), Authorize(Roles = "Lecturer,Student")]
         public async Task<ActionResult<ResponseDto<ProgressReportDTO>>> GetProgressReportById(int reportId)
         {
-            var userEmail = User.FindFirstValue("email");
-            var userRole = User.FindFirstValue("role");
+            var userEmail = (string)HttpContext.Items["userEmail"]!;
+            var userRole = (string)HttpContext.Items["userRole"]!;
 
-            if (userRole.Contains("LECTURER"))
+            if (userRole.Contains(RoleTypes.Lecturer))
             {
                 var response = await _reportService.GetProgressReportDetailByLecturerAsync(userEmail, reportId);
                 return Ok(response);
             }
 
-            if (userRole.Contains("STUDENT"))
+            if (userRole.Contains(RoleTypes.Student))
             {
                 var response = await _reportService.GetProgressReportDetailByStudentAsync(userEmail, reportId);
                 return Ok(response);
@@ -145,30 +148,30 @@ namespace Api.Controllers
             return StatusCode(403, "Not have role access");
         }
 
-        [HttpPost("progress-reports")]
+        [HttpPost("progress-reports"), Authorize(Roles = "Student")]
         public async Task<ActionResult<ResponseDto<object>>> AddProgressReport(
             [FromBody] CreateProgressReportRequest createProgressReportRequest)
         {
-            var userEmail = User.FindFirstValue("email");
+            var userEmail = (string)HttpContext.Items["userEmail"]!;
             var studentId = await _studentService.GetStudentIdByEmail(userEmail);
             var response = await _reportService.AddProgressReportAsync(createProgressReportRequest, studentId);
             return Ok(response);
         }
 
-        [HttpPut("progress-reports")]
+        [HttpPut("progress-reports"), Authorize(Roles = "Student")]
         public async Task<ActionResult<ResponseDto<object>>> UpdateProgressReport(
             [FromBody] UpdateProgressReportRequest updateProgressReportRequest)
         {
-            var userEmail = User.FindFirstValue("email");
+            var userEmail = (string)HttpContext.Items["userEmail"]!;
             var studentId = await _studentService.GetStudentIdByEmail(userEmail);
             var response = await _reportService.UpdateProgressReportAsync(updateProgressReportRequest, studentId);
             return Ok(response);
         }
 
-        [HttpDelete("progress-reports/{reportId}")]
+        [HttpDelete("progress-reports/{reportId}"), Authorize(Roles = "Student")]
         public async Task<ActionResult<ResponseDto<object>>> DeleteProgressReport(int groupId, int reportId)
         {
-            var userEmail = User.FindFirstValue("email");
+            var userEmail = (string)HttpContext.Items["userEmail"]!;
             var studentId = await _studentService.GetStudentIdByEmail(userEmail);
             var response = await _reportService.DeleteProgressReportAsync(groupId, reportId, studentId);
             return Ok(response);

@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using System;
 using FPLMS.Api.Dto;
 using FPLMS.Api.Enum;
+using Microsoft.AspNetCore.Authorization;
+using System.Data;
 
 namespace Api.Controllers
 {
@@ -21,10 +23,11 @@ namespace Api.Controllers
         {
             _meetingService = meetingService;
         }
-
-        [HttpGet]
-        public async Task<ActionResult<ResponseDto<HashSet<MeetingDto>>>> GetMeetingInGroup([FromQuery] int? classId, [FromQuery] int? groupId, [FromQuery] string userRole, [FromQuery] string userEmail, [FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
+        [HttpGet, Authorize(Roles = "Lecturer,Student")]
+        public async Task<ActionResult<ResponseDto<HashSet<MeetingDto>>>> GetMeetingInGroup([FromQuery] int? classId, [FromQuery] int? groupId, [FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
         {
+            var userEmail = (string)HttpContext.Items["userEmail"]!;
+            var userRole = (string)HttpContext.Items["userRole"]!;
             if (userRole.Contains(RoleTypes.Lecturer))
             {
                 return await _meetingService.GetMeetingInGroupByLecturerAsync(classId, groupId, new DateTimeOffset(startDate.Value), new DateTimeOffset(endDate.Value), userEmail);
@@ -36,9 +39,11 @@ namespace Api.Controllers
             return StatusCode(403, "Not have role access");
         }
 
-        [HttpGet("{meetingId}")]
-        public async Task<ActionResult<ResponseDto<MeetingDto>>> GetMeetingById(int meetingId, [FromQuery] string userRole, [FromQuery] string userEmail)
+        [HttpGet("{meetingId}"), Authorize(Roles = "Lecturer,Student")]
+        public async Task<ActionResult<ResponseDto<MeetingDto>>> GetMeetingById(int meetingId)
         {
+            var userEmail = (string)HttpContext.Items["userEmail"]!;
+            var userRole = (string)HttpContext.Items["userRole"]!;
             if (userRole.Contains(RoleTypes.Lecturer))
             {
                 return await _meetingService.GetMeetingDetailByLecturerAsync(userEmail, meetingId);
@@ -50,21 +55,27 @@ namespace Api.Controllers
             return StatusCode(403, "Not have role access");
         }
 
-        [HttpPost]
-        public async Task<ActionResult<ResponseDto<MeetingDto>>> ScheduleMeetingByLecturer(MeetingDto meetingDto, [FromQuery] string userEmail)
+        [HttpPost, Authorize(Roles = "Lecturer")]
+        public async Task<ActionResult<ResponseDto<MeetingDto>>> ScheduleMeetingByLecturer(MeetingDto meetingDto)
         {
+            var userEmail = (string)HttpContext.Items["userEmail"]!;
+            var userRole = (string)HttpContext.Items["userRole"]!;
             return await _meetingService.ScheduleMeetingByLecturerAsync(meetingDto, userEmail);
         }
 
-        [HttpPut]
-        public async Task<ActionResult<ResponseDto<object>>> UpdateMeetingByLecturer(MeetingDto meetingDto, [FromQuery] string userEmail)
+        [HttpPut, Authorize(Roles = "Lecturer")]
+        public async Task<ActionResult<ResponseDto<object>>> UpdateMeetingByLecturer(MeetingDto meetingDto)
         {
+            var userEmail = (string)HttpContext.Items["userEmail"]!;
+            var userRole = (string)HttpContext.Items["userRole"]!;
             return await _meetingService.UpdateMeetingByLecturerAsync(meetingDto, userEmail);
         }
 
-        [HttpDelete]
-        public async Task<ActionResult<ResponseDto<object>>> DeleteMeetingByLecturer([FromQuery] int meetingId, [FromQuery] string userEmail)
+        [HttpDelete, Authorize(Roles = "Lecturer")]
+        public async Task<ActionResult<ResponseDto<object>>> DeleteMeetingByLecturer([FromQuery] int meetingId)
         {
+            var userEmail = (string)HttpContext.Items["userEmail"]!;
+            var userRole = (string)HttpContext.Items["userRole"]!;
             return await _meetingService.DeleteMeetingByLecturerAsync(userEmail, meetingId);
         }
     }

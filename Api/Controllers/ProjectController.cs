@@ -7,6 +7,9 @@ using Api.Services.Projects;
 using Api.Services.Groups;
 using Api.Services.Students;
 using FPLMS.Api.Dto;
+using FPLMS.Api.Enum;
+using Microsoft.AspNetCore.Authorization;
+using System.Data;
 
 namespace Api.Controllers
 {
@@ -31,19 +34,19 @@ namespace Api.Controllers
             _logger = logger;
         }
 
-        [HttpGet]
+        [HttpGet, Authorize(Roles = "Lecturer,Student")]
         public Task<ResponseDto<HashSet<ProjectDto>>> GetAllProjects(
             [FromQuery(Name = "classId")] int? classId,
-            [FromQuery(Name = "semesterCode")] string semesterCode,
-            [FromQuery(Name = "userRole")] string userRole,
-            [FromQuery(Name = "userEmail")] string userEmail)
+            [FromQuery(Name = "semesterCode")] string semesterCode)
         {
-            if (userRole.Contains("ROLE_LECTURER"))
+            var userEmail = (string)HttpContext.Items["userEmail"]!;
+            var userRole = (string)HttpContext.Items["userRole"]!;
+            if (userRole.Contains(RoleTypes.Lecturer))
             {
                 var projects = _projectService.GetProjectByLecturerAsync(semesterCode, classId.Value, userEmail).Result;
                 return Task.FromResult(projects);
             }
-            else if (userRole.Contains("ROLE_STUDENT"))
+            else if (userRole.Contains(RoleTypes.Student))
             {
                 var projects = _projectService.GetProjectFromClassByStudentAsync(classId.Value, userEmail);
                 return projects;
@@ -52,39 +55,47 @@ namespace Api.Controllers
             return null;
         }
 
-        [HttpPut("{projectId}")]
+        [HttpPut("{projectId}"), Authorize(Roles = "Student")]
         public async Task<ActionResult> ChooseProject(
-            [FromQuery(Name = "userEmail")] string userEmail,
+
             [FromQuery(Name = "classId")] int classId,
             int projectId)
         {
+            var userEmail = (string)HttpContext.Items["userEmail"]!;
+            var userRole = (string)HttpContext.Items["userRole"]!;
             var studentId = await _studentService.GetStudentIdByEmail(userEmail);
             await _groupService.ChooseProjectInGroup(classId, projectId, studentId);
             return NoContent();
         }
 
-        [HttpPost]
+        [HttpPost, Authorize(Roles = "Lecturer,Student")]
         public async Task<ActionResult<ResponseDto<int>>> AddProject(
-            [FromQuery(Name = "userEmail")] string userEmail,
+
             [FromBody] ProjectDto ProjectDto)
         {
+            var userEmail = (string)HttpContext.Items["userEmail"]!;
+            var userRole = (string)HttpContext.Items["userRole"]!;
             return await _projectService.AddProjectAsync(ProjectDto, userEmail);
         }
 
-        [HttpPut]
+        [HttpPut, Authorize(Roles = "Lecturer,Student")]
         public async Task<ActionResult<ResponseDto<object>>> UpdateProject(
-            [FromQuery(Name = "userEmail")] string userEmail,
+
             [FromBody] ProjectDto ProjectDto)
         {
+            var userEmail = (string)HttpContext.Items["userEmail"]!;
+            var userRole = (string)HttpContext.Items["userRole"]!;
             await _projectService.UpdateProjectAsync(ProjectDto, userEmail);
             return NoContent();
         }
 
-        [HttpDelete("{projectId}")]
+        [HttpDelete("{projectId}"), Authorize(Roles = "Lecturer,Student")]
         public async Task<ActionResult<ResponseDto<object>>> DeleteProject(
-            [FromQuery(Name = "userEmail")] string userEmail,
+
             int projectId)
         {
+            var userEmail = (string)HttpContext.Items["userEmail"]!;
+            var userRole = (string)HttpContext.Items["userRole"]!;
             await _projectService.DeleteProjectAsync(projectId, userEmail);
             return NoContent();
         }

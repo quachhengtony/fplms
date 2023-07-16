@@ -1,7 +1,9 @@
 ﻿using Api.Dto.Shared.plms.ManagementService.Model.DTO;
 using Api.Services.Semesters;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.Data;
 using System.Threading.Tasks;
 
 namespace Api.Controllers
@@ -17,7 +19,7 @@ namespace Api.Controllers
             _semesterService = semesterService;
         }
 
-        [HttpGet]
+        [HttpGet, Authorize(Roles = "Lecturer,Student")]
         public async Task<ActionResult<HashSet<SemesterDTO>>> GetSemester([FromQuery] string code)
         {
             var semesters = await _semesterService.GetSemester(code);
