@@ -32,9 +32,11 @@ public class GroupController : ControllerBase
 		_logger = logger;
 	}
 
-	[HttpGet]
-	public Task<ResponseDto<HashSet<GroupDetailResponseDto>>> GetGroupOfClass(int classId, [FromQuery] string userEmail, [FromQuery] string userRole)
+	[HttpGet, Authorize(Roles = "Lecturer,Student")]
+	public Task<ResponseDto<HashSet<GroupDetailResponseDto>>> GetGroupOfClass(int classId)
 	{
+		string userEmail = (string)HttpContext.Items["userEmail"]!;
+		string userRole = (string)HttpContext.Items["userRole"]!;
 		if (userRole == RoleTypes.Lecturer)
 			return _groupService.GetGroupOfClassByLecturer(classId, userEmail);
 		if (userRole == RoleTypes.Student)
@@ -42,61 +44,69 @@ public class GroupController : ControllerBase
 		return Task.FromResult(new ResponseDto<HashSet<GroupDetailResponseDto>> { code = 403, message = "Not have role access" });
 	}
 
-	[HttpPost]
-	public Task<ResponseDto<object>> CreateGroupByLecturer([FromBody] CreateGroupRequestDto createGroupRequest, int classId, string userEmail) {
+	[HttpPost, Authorize(Roles = "Lecturer")]
+	public Task<ResponseDto<object>> CreateGroupByLecturer([FromBody] CreateGroupRequestDto createGroupRequest, int classId) {
 
+		string userEmail = (string)HttpContext.Items["userEmail"]!;
 		createGroupRequest.ClassId = classId;
         return _groupService.CreateGroupRequestByLecturer(createGroupRequest, userEmail);
     }
 
-	[HttpPut]
-	public Task<ResponseDto<object>> UpdateGroupByLecturer(int classId, [FromBody] GroupDto groupDTO, [FromQuery] string userEmail) {
-        return _groupService.UpdateGroupByLecturer(classId, groupDTO, userEmail);
+	[HttpPut, Authorize(Roles = "Lecturer")]
+	public Task<ResponseDto<object>> UpdateGroupByLecturer(int classId, [FromBody] GroupDto groupDTO) {
+		string userEmail = (string)HttpContext.Items["userEmail"]!;
+		return _groupService.UpdateGroupByLecturer(classId, groupDTO, userEmail);
     }
 
-	[HttpDelete("{groupId}")]
-	public Task<ResponseDto<object>> DeleteGroupByLecturer(int groupId, int classId, [FromQuery] string userEmail) {
-        return _groupService.DeleteGroupByLecturer(groupId, classId, userEmail);
+	[HttpDelete("{groupId}"), Authorize(Roles = "Lecturer")]
+	public Task<ResponseDto<object>> DeleteGroupByLecturer(int groupId, int classId) {
+		string userEmail = (string)HttpContext.Items["userEmail"]!;
+		return _groupService.DeleteGroupByLecturer(groupId, classId, userEmail);
     }
 	
-	[HttpPut("{groupId}/disable")]
-	public Task<ResponseDto<object>> DisableGroupByLecturer(int groupId, int classId, [FromQuery] string userEmail) {
-        return _groupService.DisableGroupByLecturer(groupId, classId, userEmail);
+	[HttpPut("{groupId}/disable"), Authorize(Roles = "Lecturer")]
+	public Task<ResponseDto<object>> DisableGroupByLecturer(int groupId, int classId) {
+		string userEmail = (string)HttpContext.Items["userEmail"]!;
+		return _groupService.DisableGroupByLecturer(groupId, classId, userEmail);
     }
 
-	[HttpPut("{groupId}/enable")]
-	public Task<ResponseDto<object>> EnableGroupByLecturer(int groupId, int classId, [FromQuery] string userEmail) {
-        return _groupService.EnableGroupByLecturer(groupId, classId, userEmail);
+	[HttpPut("{groupId}/enable"), Authorize(Roles = "Lecturer")]
+	public Task<ResponseDto<object>> EnableGroupByLecturer(int groupId, int classId) {
+		string userEmail = (string)HttpContext.Items["userEmail"]!;
+		return _groupService.EnableGroupByLecturer(groupId, classId, userEmail);
     }
 
-	[HttpPost("{groupId}/join")]
-	public Task<ResponseDto<object>> AddStudentToGroup([FromQuery] string userEmail, int classId, int groupId) {
+	[HttpPost("{groupId}/join"), Authorize(Roles = "Student")]
+	public Task<ResponseDto<object>> AddStudentToGroup(int classId, int groupId) {
+		string userEmail = (string)HttpContext.Items["userEmail"]!;
 		int studentId = _studentService.GetStudentIdByEmail(userEmail).Result;
         return _groupService.AddStudentToGroup(classId, groupId, studentId);
     }
 
-	[HttpDelete("leave")]
-	public Task<ResponseDto<object>> RemoveStudentFromGroup(string userEmail, int classId) {
+	[HttpDelete("leave"), Authorize(Roles = "Student")]
+	public Task<ResponseDto<object>> RemoveStudentFromGroup(int classId) {
+		string userEmail = (string)HttpContext.Items["userEmail"]!;
 		int studentId = _studentService.GetStudentIdByEmail(userEmail).Result;
         return _groupService.RemoveStudentFromGroup(classId, studentId);
     }
 
-	[HttpDelete("remove/{removeStudentId}")]
-	public Task<ResponseDto<object>> removeStudentFromGroupByLeader([FromQuery] string userEmail, int classId, int removeStudentId) {
-
+	[HttpDelete("remove/{removeStudentId}"), Authorize(Roles = "Student")]
+	public Task<ResponseDto<object>> removeStudentFromGroupByLeader(int classId, int removeStudentId) {
+		string userEmail = (string)HttpContext.Items["userEmail"]!;
 		int leaderId = _studentService.GetStudentIdByEmail(userEmail).Result;
         return _groupService.RemoveStudentFromGroupByLeader(classId, removeStudentId, leaderId);
     }
 
-	[HttpGet("details")]
-	public Task<ResponseDto<GroupDetailResponseDto>> getGroupByClassIdAndGroupId([FromQuery] string userEmail, int classId) {
-
+	[HttpGet("details"), Authorize(Roles = "Student")]
+	public Task<ResponseDto<GroupDetailResponseDto>> getGroupByClassIdAndGroupId(int classId) {
+		string userEmail = (string)HttpContext.Items["userEmail"]!;
 		int studentId = _studentService.GetStudentIdByEmail(userEmail).Result;
 		return _groupService.GetGroupByClassId(classId, studentId);
     }
 
-	[HttpPut("changeLeader/{newLeaderId}")]
-	public Task<ResponseDto<object>> changeGroupLeader([FromQuery] string userEmail, int classId, int newLeaderId) {
+	[HttpPut("changeLeader/{newLeaderId}"), Authorize(Roles = "Student")]
+	public Task<ResponseDto<object>> changeGroupLeader(int classId, int newLeaderId) {
+		string userEmail = (string)HttpContext.Items["userEmail"]!;
 		int leaderId = _studentService.GetStudentIdByEmail(userEmail).Result;
 		return _groupService.ChangeGroupLeader(classId, leaderId, newLeaderId);
     }
