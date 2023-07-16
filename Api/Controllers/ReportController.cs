@@ -37,8 +37,16 @@ namespace Api.Controllers
 
             if (userRole.Contains(RoleTypes.Lecturer))
             {
-                var response = await _reportService.GetCycleReportInGroupByLecturerAsync(groupId, userEmail);
-                return Ok(response);
+                if (classId == null && groupId != null)
+                {
+                    var response = await _reportService.GetCycleReportInGroupByLecturerAsync(groupId, userEmail);
+                    return Ok(response);
+                }
+                else
+                {
+                    var response = await _reportService.GetCycleReportInClassByLecturer(classId.Value, userEmail);
+                    return Ok(response);
+                }
             }
 
             if (userRole.Contains(RoleTypes.Student))
