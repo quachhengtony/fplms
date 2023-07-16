@@ -19,9 +19,11 @@ namespace Api.Controllers
             _semesterService = semesterService;
         }
 
-        [HttpGet, Authorize(Roles = "Lecturer,Student")]
-        public async Task<ActionResult<HashSet<SemesterDTO>>> GetSemester([FromQuery] string code)
+        [HttpGet]
+        public async Task<ActionResult<HashSet<SemesterDTO>>> GetSemester([FromQuery] string? code)
         {
+            if (code == null)
+                code = "";
             var semesters = await _semesterService.GetSemester(code);
             return Ok(semesters);
         }

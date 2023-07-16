@@ -30,9 +30,9 @@ builder.Services.AddScoped<ISubjectService, SubjectService>();
 builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<IGroupService, GroupService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
-//builder.Services.AddScoped<ISemesterService, SemesterService>();
-//builder.Services.AddScoped<IReportService, ReportService>();
-//builder.Services.AddScoped<IMeetingService, MeetingService>();
+builder.Services.AddScoped<ISemesterService, SemesterService>();
+builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IMeetingService, MeetingService>();
 builder.Services.AddScoped<ValidationFilterAttribute>();
 builder.Services.AddHttpLogging(options =>
 {

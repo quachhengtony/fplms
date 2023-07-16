@@ -15,7 +15,7 @@ using static Google.Apis.Requests.BatchRequest;
 
 namespace Api.Services.Reports
 {
-    public class ReportService
+    public class ReportService : IReportService
     {
         private readonly ILogger<ReportService> _logger;
         private readonly ICycleReportRepository _cycleReportRepository;
