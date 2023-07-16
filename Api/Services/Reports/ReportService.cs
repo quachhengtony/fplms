@@ -298,7 +298,7 @@ namespace Api.Services.Reports
             return new ResponseDto<HashSet<CycleReportDTO>>{ code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE, data = cycleReportDtoSet };
         }
 
-        public async Task<ResponseDto<HashSet<ProgressReportDTO>>> GetProgressReportInGroupByLecturerAsync(int classId, int groupId, DateTime startDate, DateTime endDate, string userEmail)
+        public async Task<ResponseDto<HashSet<ProgressReportDTO>>> GetProgressReportInGroupByLecturerAsync(int classId, int groupId, DateTime? startDate, DateTime? endDate, string userEmail)
         {
             _logger.LogInformation("GetProgressReportInGroupByLecturerAsync(classId: {classId}, groupId: {groupId}, startDate: {startDate}, endDate: {endDate}, userEmail: {userEmail})", classId, groupId, startDate, endDate, userEmail);
             int? lecturerId = await _lecturerRepository.FindLecturerIdByEmailAsync(userEmail);
@@ -317,7 +317,7 @@ namespace Api.Services.Reports
             return await GetProgressReportInGroup(classId, groupId, startDate, endDate);
         }
 
-        public async Task<ResponseDto<HashSet<ProgressReportDTO>>> GetProgressReportInGroupByStudentAsync(int classId, int groupId, DateTime startDate, DateTime endDate, string userEmail)
+        public async Task<ResponseDto<HashSet<ProgressReportDTO>>> GetProgressReportInGroupByStudentAsync(int classId, int groupId, DateTime? startDate, DateTime? endDate, string userEmail)
         {
             _logger.LogInformation("GetProgressReportInGroupByStudentAsync(classId: {classId}, groupId: {groupId}, startDate: {startDate}, endDate: {endDate}, userEmail: {userEmail})", classId, groupId, startDate, endDate, userEmail);
             int? studentId = await _studentRepository.FindStudentIdByEmail(userEmail);

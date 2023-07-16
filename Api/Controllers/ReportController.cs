@@ -121,14 +121,14 @@ namespace Api.Controllers
             if (userRole.Contains(RoleTypes.Lecturer))
             {
                 var response = await _reportService.GetProgressReportInGroupByLecturerAsync(
-                    classId, groupId, startDate.Value, endDate.Value, userEmail);
+                    classId, groupId, startDate, endDate, userEmail);
                 return Ok(response);
             }
 
             if (userRole.Contains(RoleTypes.Student))
             {
                 var response = await _reportService.GetProgressReportInGroupByStudentAsync(
-                    classId, groupId, startDate.Value, endDate.Value, userEmail);
+                    classId, groupId, startDate, endDate, userEmail);
                 return Ok(response);
             }
 
