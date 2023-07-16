@@ -71,5 +71,31 @@ namespace Repositories
                 .Select(pr => pr.ReportTime)
                 .FirstOrDefaultAsync();
         }
+
+        public Task<bool> ExistsById(int reportId)
+        {
+            return dbContext.ProgressReports.AnyAsync(pr => pr.Id == reportId);
+        }
+
+        public async Task<ProgressReport> GetByIdAsync(int reportId)
+        {
+            return await dbContext.ProgressReports.FindAsync(reportId);
+        }
+
+        public async Task SaveAsync(ProgressReport progressReport)
+        {
+            dbContext.ProgressReports.Add(progressReport);
+            await dbContext.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(int reportId)
+        {
+            var progressReport = await GetByIdAsync(reportId);
+            if (progressReport != null)
+            {
+                dbContext.ProgressReports.Remove(progressReport);
+                await dbContext.SaveChangesAsync();
+            }
+        }
     }
 }

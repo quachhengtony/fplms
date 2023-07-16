@@ -143,5 +143,10 @@ namespace Repositories
             dbContext.SaveChanges();
             return;
         }
+
+        public Task<bool> ExistsById(int groupId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

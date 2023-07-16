@@ -1,5 +1,6 @@
 ﻿using BusinessObjects.Models;
 using Google.Protobuf.WellKnownTypes;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,5 +18,9 @@ namespace Repositories.Interfaces
         public Task<DateTime> GetSemesterStartDate(String code);
 
         public Task<bool> ExistsById(string code);
+        public Task SaveAsync(Semester semester);
+
+        public Task DeleteAsync(string code);
+
     }
 }

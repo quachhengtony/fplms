@@ -62,5 +62,28 @@ namespace Repositories
         {
             return dbContext.Meetings.Where(m => m.Id == meetingId).FirstOrDefaultAsync();
         }
+
+        public async Task<bool> ExistsById(int meetingId)
+        {
+            return await dbContext.Meetings
+                .AnyAsync(m => m.Id == meetingId);
+        }
+
+        public async Task<int> SaveAsync(Meeting meeting)
+        {
+            dbContext.Meetings.Add(meeting);
+            await dbContext.SaveChangesAsync();
+            return meeting.Id;
+        }
+
+        public async Task DeleteByIdAsync(int meetingId)
+        {
+            var meeting = await dbContext.Meetings.FindAsync(meetingId);
+            if (meeting != null)
+            {
+                dbContext.Meetings.Remove(meeting);
+                await dbContext.SaveChangesAsync();
+            }
+        }
     }
 }

@@ -126,5 +126,11 @@ namespace Repositories
             dbContext.SaveChanges();
             return;
         }
+
+        public Task<bool> ExistsByIdAsync(int? classId)
+        {
+            return dbContext.Classes
+                .AnyAsync(c => c.Id == classId && c.IsDisable == 0);
+        }
     }
 }

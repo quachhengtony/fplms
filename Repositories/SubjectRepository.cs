@@ -75,9 +75,9 @@ namespace Repositories
         public async Task Update(Subject subject)
         {
             dbContext.Subjects.Update(subject);
-            dbContext.SaveChanges();
-            return;
+            await dbContext.SaveChangesAsync();
         }
+
 
     }
 }

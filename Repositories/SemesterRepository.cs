@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Repositories
 {
-    public class SemesterRepository :ISemesterRepository
+    public class SemesterRepository : ISemesterRepository
     {
         private static SemesterRepository? instance;
         private static readonly object instanceLock = new object();
@@ -46,6 +46,22 @@ namespace Repositories
         public async Task<DateTime> GetSemesterStartDate(string code)
         {
             return (DateTime)await dbContext.Semesters.Where(s => s.Code == code).Select(s => s.StartDate).FirstOrDefaultAsync();
+        }
+
+        public async Task SaveAsync(Semester semester)
+        {
+            dbContext.Semesters.Add(semester);
+            await dbContext.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(string code)
+        {
+            var semester = await dbContext.Semesters.FindAsync(code);
+            if (semester != null)
+            {
+                dbContext.Semesters.Remove(semester);
+                await dbContext.SaveChangesAsync();
+            }
         }
 
         public async Task<bool> ExistsById(string code)

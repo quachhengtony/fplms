@@ -55,5 +55,10 @@ namespace Repositories
             dbContext.Lecturers.Add(lecturer);
             return dbContext.SaveChangesAsync();
         }
+
+        public Task<bool> ExistsById(int lecturerId)
+        {
+            return dbContext.Lecturers.AnyAsync(l => l.Id == lecturerId);
+        }
     }
 }

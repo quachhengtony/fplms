@@ -184,7 +184,7 @@ namespace Api.Services.Groups
             startGroupNumber++;
             for (int index = startGroupNumber; index<startGroupNumber + createGroupRequest.GroupQuantity; index++) 
             {
-                Group group = new Group
+                Group group = new Group()
                 {
                     MemberQuantity = createGroupRequest.MemberQuantity,
                     EnrollTime = createGroupRequest.EnrollTime,

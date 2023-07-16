@@ -18,5 +18,8 @@ namespace Repositories.Interfaces
         public Task<List<Meeting>> FindByStudentIdAsync(int studentId, DateTime startDate, DateTime endDate);
         
         public Task<Meeting> FindOneByIdAsync(int meetingId);
+        Task<bool> ExistsById(int meetingId);
+        Task<int> SaveAsync(Meeting meeting);
+        Task DeleteByIdAsync(int meetingId);
     }
 }

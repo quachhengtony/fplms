@@ -55,5 +55,37 @@ namespace Repositories
         {
             return dbContext.CycleReports.Where(r => r.GroupId == group.Id).ToListAsync();
         }
+
+        public async Task<bool> ExistsById(int reportId)
+        {
+            return await dbContext.CycleReports
+                .AnyAsync(c => c.Id == reportId);
+        }
+
+        public async Task<CycleReport> GetByIdAsync(int reportId)
+        {
+            return await dbContext.CycleReports.FindAsync(reportId);
+        }
+
+        public async Task<CycleReport> SaveAsync(CycleReport cycleReport)
+        {
+            dbContext.CycleReports.Add(cycleReport);
+            await dbContext.SaveChangesAsync();
+            return cycleReport;
+        }
+
+        public async Task<CycleReport> GetByIdAndGroupIdAsync(int groupId, int reportId)
+        {
+            return await dbContext.CycleReports
+                .FirstOrDefaultAsync(c => c.Id == reportId && c.GroupId == groupId);
+        }
+
+        public async Task DeleteAsync(CycleReport cycleReport)
+        {
+            dbContext.CycleReports.Remove(cycleReport);
+            await dbContext.SaveChangesAsync();
+        }
+
+
     }
 }

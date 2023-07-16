@@ -78,5 +78,13 @@ namespace Repositories
         {
             await dbContext.Database.ExecuteSqlInterpolatedAsync($"UPDATE PROJECT SET is_disable = 1 WHERE id = {projectId}");
         }
+
+
+        public async Task<int> SaveAsync(Project project)
+        {
+            dbContext.Projects.Add(project);
+            await dbContext.SaveChangesAsync();
+            return project.Id;
+        }
     }
 }

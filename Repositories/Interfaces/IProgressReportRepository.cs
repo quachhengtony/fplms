@@ -19,5 +19,9 @@ namespace Repositories.Interfaces
         Task<HashSet<ProgressReport>> FindByGroupIdAndTimeFilter(int groupId, DateTime startDate, DateTime endDate);
 
         Task<DateTime> GetDateOfProgressReport(int reportId);
+        Task<bool> ExistsById(int reportId);
+        Task<ProgressReport> GetByIdAsync(int reportId);
+        Task SaveAsync(ProgressReport progressReport);
+        Task DeleteAsync(int reportId);
     }
 }
