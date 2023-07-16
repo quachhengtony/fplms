@@ -7,6 +7,7 @@ using Api.Services.Constant;
 using BusinessObjects.Models;
 using FPLMS.Api.Dto;
 using Microsoft.Extensions.Logging;
+using Repositories;
 using Repositories.Interfaces;
 
 namespace Api.Services.Semesters
@@ -18,12 +19,10 @@ namespace Api.Services.Semesters
         private readonly ILogger<SemesterService> _logger;
         private const string SEMESTER_HAS_ASSOCIATED_CLASSES_MESSAGE = "Semester still has class";
         public SemesterService(
-            ISemesterRepository semesterRepository,
-            IClassRepository classRepository,
             ILogger<SemesterService> logger)
         {
-            _semesterRepository = semesterRepository;
-            _classRepository = classRepository;
+            _semesterRepository = SemesterRepository.Instance;
+            _classRepository = ClassRepository.Instance;
             _logger = logger;
         }
 
