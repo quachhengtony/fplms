@@ -28,7 +28,12 @@ public class ClassController : ControllerBase
     [HttpPost, Authorize(Roles = "Lecturer")]
     public async Task<ActionResult<ResponseDto<int>>> CreateClassByLecturer([FromBody] ClassRequestResponseDto classDto)
     {
-        string userEmail = (string)HttpContext.Items["userEmail"];
+        string userEmail = (string)HttpContext.Items["userEmail"]!;
+        string userRole = (string)HttpContext.Items["userRole"]!;
+
+        _logger.LogInformation(userEmail);
+        _logger.LogInformation(userRole);
+
         var responseDto = new ResponseDto<int>
         {
             code = StatusCodes.Status200OK,
