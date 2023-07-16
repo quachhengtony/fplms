@@ -50,7 +50,7 @@ namespace Repositories
         public async Task<HashSet<Project>> FindBySubjectIdAndLecturerIdAndSemester(int subjectId, int lecturerId, string semesterCode)
         {
             var projects = await dbContext.Projects
-                .FromSqlRaw("SELECT * FROM PROJECT WHERE SUBJECT_id = {0} AND LECTURER_id = {1} AND SEMESTER_code = {2} AND is_disable = 0", subjectId, lecturerId, semesterCode)
+                .FromSqlRaw("SELECT * FROM project WHERE SUBJECT_id = {0} AND LECTURER_id = {1} AND SEMESTER_code = {2} AND is_disable = 0", subjectId, lecturerId, semesterCode)
                 .ToListAsync();
 
             return projects.ToHashSet();

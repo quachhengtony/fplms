@@ -100,15 +100,14 @@ namespace Api.Services.Projects
                 _logger.LogWarning("Get project from class: {0}", ServiceMessage.INVALID_ARGUMENT_MESSAGE);
                 return new ResponseDto<HashSet<ProjectDto>>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
             }
+            var classEntity = await _classRepository.FindOneByIdAsync(classId);
             var projectSet = await _projectRepository
-                .FindBySubjectIdAndLecturerIdAndSemester((await _classRepository.FindOneByIdAsync(classId)).SubjectId,
-                                                        (await _classRepository.FindOneByIdAsync(classId)).LecturerId,
-                                                        (await _classRepository.FindOneByIdAsync(classId)).SemesterCode);
+                .FindBySubjectIdAndLecturerIdAndSemester(classEntity.SubjectId, classEntity.LecturerId, classEntity.SemesterCode);
             var ProjectDtoSet = projectSet
             .Select(projectEntity => MapToProjectDto(projectEntity))
                 .ToHashSet();
             _logger.LogInformation("Get project from class success");
-            return new ResponseDto<HashSet<ProjectDto>>(ServiceStatusCode.OK_STATUS, ServiceMessage.SUCCESS_MESSAGE, ProjectDtoSet);
+            return new ResponseDto<HashSet<ProjectDto>> { code = ServiceStatusCode.OK_STATUS , message = ServiceMessage.SUCCESS_MESSAGE , data = ProjectDtoSet };
         }
 
         public async Task<ResponseDto<HashSet<ProjectDto>>> GetAllProjectInSemesterByLecturerAsync(int lecturerId, string semesterCode)
@@ -231,6 +230,14 @@ namespace Api.Services.Projects
             return new ProjectDto
             {
                 Id = projectEntity.Id,
+                Name = projectEntity.Name,
+                Problem = projectEntity.Problem,
+                Actors = projectEntity.Actors,
+                Requirements = projectEntity.Requirements,
+                Theme = projectEntity.Theme,
+                SubjectId = projectEntity.SubjectId,
+                SemesterCode = projectEntity.SemesterCode,
+                Context = projectEntity.Context
                 // Map other properties
             };
         }
@@ -240,6 +247,15 @@ namespace Api.Services.Projects
             return new Project
             {
                 Id = ProjectDto.Id,
+                Name = ProjectDto.Name,
+                Problem = ProjectDto.Problem,
+                Actors = ProjectDto.Actors,
+                Requirements = ProjectDto.Requirements,
+                Theme = ProjectDto.Theme,
+                SubjectId = ProjectDto.SubjectId,
+                SemesterCode = ProjectDto.SemesterCode,
+                Context = ProjectDto.Context
+
                 // Map other properties
             };
         }
