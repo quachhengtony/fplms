@@ -4,6 +4,7 @@ using BusinessObjects.Models;
 using FPLMS.Api.Dto;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.Logging;
+using Repositories;
 using Repositories.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -32,17 +33,14 @@ namespace Api.Services.Meetings
         private const string UPDATE_MEETING_MESSAGE = "Update meeting: ";
         private const string DELETE_MEETING_MESSAGE = "Update meeting: ";
 
-        public MeetingService(IMeetingRepository meetingRepository, IClassRepository classRepository,
-            IStudentRepository studentRepository, ILecturerRepository lecturerRepository,
-            IStudentGroupRepository studentGroupRepository, IGroupRepository groupRepository,
-            ILogger<MeetingService> logger)
+        public MeetingService(ILogger<MeetingService> logger)
         {
-            _meetingRepository = meetingRepository;
-            _classRepository = classRepository;
-            _studentRepository = studentRepository;
-            _lecturerRepository = lecturerRepository;
-            _studentGroupRepository = studentGroupRepository;
-            _groupRepository = groupRepository;
+            _meetingRepository = MeetingRepository.Instance;
+            _classRepository = ClassRepository.Instance;
+            _studentRepository = StudentRepository.Instance;
+            _lecturerRepository = LecturerRepository.Instance;
+            _studentGroupRepository = StudentGroupRepository.Instance;
+            _groupRepository = GroupRepository.Instance;
             _logger = logger;
         }
 

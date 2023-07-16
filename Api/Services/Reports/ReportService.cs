@@ -44,23 +44,16 @@ namespace Api.Services.Reports
         private const string GET_PROGRESS_REPORT = "Get progress report: ";
         private const string FEEDBACK_CYCLE_REPORT = "Feedback cycle report: ";
         public ReportService(
-            ILogger<ReportService> logger,
-            ICycleReportRepository cycleReportRepository,
-            IClassRepository classRepository,
-            IGroupRepository groupRepository,
-            IStudentGroupRepository studentGroupRepository,
-            IStudentRepository studentRepository,
-            ILecturerRepository lecturerRepository,
-            IProgressReportRepository progressReportRepository)
+            ILogger<ReportService> logger)
         {
             _logger = logger;
-            _cycleReportRepository = cycleReportRepository;
-            _classRepository = classRepository;
-            _groupRepository = groupRepository;
-            _studentGroupRepository = studentGroupRepository;
-            _studentRepository = studentRepository;
-            _lecturerRepository = lecturerRepository;
-            _progressReportRepository = progressReportRepository;
+            _cycleReportRepository = CycleReportRepository.Instance;
+            _classRepository = ClassRepository.Instance;
+            _groupRepository = GroupRepository.Instance;
+            _studentGroupRepository = StudentGroupRepository.Instance;
+            _studentRepository = StudentRepository.Instance;
+            _lecturerRepository = LecturerRepository.Instance;
+            _progressReportRepository = ProgressReportRepository.Instance;
         }
 
         private CycleReportDTO MapToCycleReportDTO(CycleReport cycleReport)
