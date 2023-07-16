@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Api.Dto.Shared.plms.ManagementService.Model.DTO;
 using Api.Services.Constant;
-using Api.Services.Semesters;
 using BusinessObjects.Models;
 using FPLMS.Api.Dto;
 using Microsoft.Extensions.Logging;

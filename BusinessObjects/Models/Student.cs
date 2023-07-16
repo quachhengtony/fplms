@@ -5,11 +5,10 @@ namespace BusinessObjects.Models;
 
 public partial class Student
 {
-    private int studentId;
 
-    public Student(int studentId)
+    public Student(int id)
     {
-        this.studentId = studentId;
+        this.Id = id;
     }
 
     public int Id { get; set; }

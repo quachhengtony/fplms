@@ -32,7 +32,7 @@ namespace Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<ResponseDto<HashSet<ProjectDto>>>> GetAllProjects(
+        public async Task<ResponseDto<HashSet<ProjectDto>>> GetAllProjects(
             [FromQuery(Name = "classId")] int? classId,
             [FromQuery(Name = "semesterCode")] string semesterCode,
             [FromQuery(Name = "userRole")] string userRole,
@@ -41,15 +41,15 @@ namespace Api.Controllers
             if (userRole.Contains("ROLE_LECTURER"))
             {
                 var projects = await _projectService.GetProjectByLecturerAsync(semesterCode, classId.Value, userEmail);
-                return Ok(projects);
+                return projects;
             }
             else if (userRole.Contains("ROLE_STUDENT"))
             {
                 var projects = await _projectService.GetProjectFromClassByStudentAsync(classId.Value, userEmail);
-                return Ok(projects);
+                return projects;
             }
 
-            return StatusCode(403, "Not have role access");
+            return null;
         }
 
         [HttpPut("{projectId}")]

@@ -7,7 +7,7 @@ using BusinessObjects.Models;
 using FPLMS.Api.Dto;
 using Repositories.Interfaces;
 using System.Threading.Tasks;
-
+using Repositories;
 
 namespace Api.Services.Projects
 {
@@ -31,23 +31,16 @@ namespace Api.Services.Projects
         private const string DELETE_PROJECT = "Delete project in class: ";
 
         public ProjectService(
-            ILogger<ProjectService> logger,
-            IProjectRepository projectRepository,
-            IClassRepository classRepository,
-            IGroupRepository groupRepository,
-            IStudentRepository studentRepository,
-            ILecturerRepository lecturerRepository,
-            ISubjectRepository subjectRepository,
-            ISemesterRepository semesterRepository)
+            ILogger<ProjectService> logger)
         {
             _logger = logger;
-            _projectRepository = projectRepository;
-            _classRepository = classRepository;
-            _groupRepository = groupRepository;
-            _studentRepository = studentRepository;
-            _lecturerRepository = lecturerRepository;
-            _subjectRepository = subjectRepository;
-            _semesterRepository = semesterRepository;
+            _projectRepository = ProjectRepository.Instance;
+            _classRepository = ClassRepository.Instance;
+            _groupRepository = GroupRepository.Instance;
+            _studentRepository = StudentRepository.Instance;
+            _lecturerRepository = LecturerRepository.Instance;
+            _subjectRepository = SubjectRepository.Instance;
+            _semesterRepository = SemesterRepository.Instance;
         }
 
         public async Task<ResponseDto<HashSet<ProjectDto>>> GetProjectFromClassByStudentAsync(int classId, string userEmail)
@@ -108,8 +101,8 @@ namespace Api.Services.Projects
                 return new ResponseDto<HashSet<ProjectDto>>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
             }
             var projectSet = await _projectRepository
-                .FindBySubjectIdAndLecturerIdAndSemester((await _classRepository.FindOneByIdAsync(classId)).Subject.Id,
-                                                        (await _classRepository.FindOneByIdAsync(classId)).Lecturer.Id,
+                .FindBySubjectIdAndLecturerIdAndSemester((await _classRepository.FindOneByIdAsync(classId)).SubjectId,
+                                                        (await _classRepository.FindOneByIdAsync(classId)).LecturerId,
                                                         (await _classRepository.FindOneByIdAsync(classId)).SemesterCode);
             var ProjectDtoSet = projectSet
             .Select(projectEntity => MapToProjectDto(projectEntity))
