@@ -78,7 +78,7 @@ namespace Api.Services.Projects
                     _logger.LogWarning("{0}{1}", GET_PROJECT, ServiceMessage.ID_NOT_EXIST_MESSAGE);
                     return new ResponseDto<HashSet<ProjectDto>> { code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.ID_NOT_EXIST_MESSAGE };
                 }
-                if (!lecturerId.Equals((await _classRepository.FindOneByIdAsync(classId.Value)).Lecturer.Id))
+                if (!lecturerId.Equals((await _classRepository.FindOneByIdAsync(classId.Value)).LecturerId))
                 {
                     _logger.LogWarning("{0}{1}", GET_PROJECT, "Lecturer not manage class");
                     return new ResponseDto<HashSet<ProjectDto>>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = "Lecturer not manage class" };
