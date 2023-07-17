@@ -642,7 +642,7 @@ namespace Api.Services.Reports
         {
             _logger.LogInformation($"{FEEDBACK_CYCLE_REPORT}{feedbackCycleReportRequest}");
             int? lecturerId = await _lecturerRepository.FindLecturerIdByEmailAsync(userEmail);
-            if (lecturerId == null || feedbackCycleReportRequest.GroupId == null || feedbackCycleReportRequest.ReportId == null ||
+            if (lecturerId == null ||
                     !await _groupRepository.ExistsById(feedbackCycleReportRequest.GroupId) || !await _cycleReportRepository.ExistsById(feedbackCycleReportRequest.ReportId))
             {
                 _logger.LogWarning($"{FEEDBACK_CYCLE_REPORT}{ServiceMessage.INVALID_ARGUMENT_MESSAGE}");
