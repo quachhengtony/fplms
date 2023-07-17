@@ -38,7 +38,7 @@ namespace Repositories
         public async Task<int> ExistsByStudentIdAndGroupIdAndCurDate(int studentId, int groupId, DateTime curDate)
         {
             return await dbContext.ProgressReports
-                .Where(pr => pr.StudentId == studentId && pr.GroupId == groupId && pr.ReportTime == curDate)
+                .Where(pr => pr.StudentId == studentId && pr.GroupId == groupId && pr.ReportTime.Date == curDate)
                 .Select(pr => pr.Id)
                 .FirstOrDefaultAsync();
         }
