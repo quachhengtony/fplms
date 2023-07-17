@@ -26,9 +26,9 @@ namespace Repositories
             return dbContext.Database.ExecuteSqlRawAsync($"update cycle_report set feedback = '{feedback}', mark = {mark} where id = {reportId}");
         }
 
-        public Task<int> ExistsByGroupAndCycleNumberAsync(Group group, int cycleNumber)
+        public Task<int> ExistsByGroupAndCycleNumberAsync(int groupId, int cycleNumber)
         {
-            return dbContext.CycleReports.Where(c => c.GroupId == group.Id && c.CycleNumber == cycleNumber)
+            return dbContext.CycleReports.Where(c => c.GroupId == groupId && c.CycleNumber == cycleNumber)
                 .Select(c => c.Id)
                 .FirstOrDefaultAsync();
         }

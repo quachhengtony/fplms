@@ -403,7 +403,7 @@ namespace Api.Services.Reports
                 return new ResponseDto<CycleReportDTO>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = NOT_IN_CYCLE };
             }
 
-            if (await _cycleReportRepository.ExistsByGroupAndCycleNumberAsync(new Group(groupId), currentCycle.Value) == 1)
+            if ((await _cycleReportRepository.ExistsByGroupAndCycleNumberAsync(groupId, currentCycle.Value)) == 1)
             {
                 _logger.LogWarning("{CREATE_CYCLE_REPORT}{CYCLE_REPORT_EXISTS}");
                 return new ResponseDto<CycleReportDTO>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = CYCLE_REPORT_EXISTS };
