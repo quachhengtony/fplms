@@ -68,7 +68,7 @@ namespace Api.Services.Reports
                 CycleNumber = cycleReport.CycleNumber,
                 Feedback = cycleReport.Feedback,
                 ResourceLink = cycleReport.ResourceLink,
-                Mark = cycleReport.Mark.Value,
+                Mark = cycleReport.Mark,
                 GroupId = cycleReport.GroupId
                 // Map other properties here
             };
