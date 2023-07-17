@@ -522,7 +522,7 @@ namespace Api.Services.Reports
                 return new ResponseDto<object>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = NOT_IN_GROUP };
             }
 
-            if (await _progressReportRepository.ExistsByStudentIdAndGroupIdAndCurDate(studentId, groupId, DateTime.UtcNow.Date) == 0)
+            if (await _progressReportRepository.ExistsByStudentIdAndGroupIdAndCurDate(studentId, groupId, DateTime.UtcNow.Date) == 1)
             {
                 _logger.LogWarning("{CREATE_PROGRESS_REPORT}{PROGRESS_REPORT_EXIST}", CREATE_PROGRESS_REPORT, "Student only allow to send progress report once a day.");
                 return new ResponseDto<object>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = "Student only allow to send progress report once a day." };
