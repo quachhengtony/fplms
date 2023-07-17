@@ -62,6 +62,7 @@ namespace Repositories
                 .Include(c => c.Lecturer)
                 .Include(c => c.Students)
                 .Include(c => c.SemesterCodeNavigation)
+                .Include(c => c.Groups).ThenInclude(g => g.CycleReports)
                 .FirstOrDefaultAsync();
         }
 
