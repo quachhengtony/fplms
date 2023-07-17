@@ -68,7 +68,7 @@ namespace Api.Controllers
             return NoContent();
         }
 
-        [HttpPost, Authorize(Roles = "Lecturer,Student")]
+        [HttpPost, Authorize(Roles = "Lecturer")]
         public async Task<ActionResult<ResponseDto<int>>> AddProject(
 
             [FromBody] ProjectDto ProjectDto)
@@ -78,7 +78,7 @@ namespace Api.Controllers
             return await _projectService.AddProjectAsync(ProjectDto, userEmail);
         }
 
-        [HttpPut, Authorize(Roles = "Lecturer,Student")]
+        [HttpPut, Authorize(Roles = "Lecturer")]
         public async Task<ActionResult<ResponseDto<object>>> UpdateProject(
 
             [FromBody] ProjectDto ProjectDto)
@@ -89,7 +89,7 @@ namespace Api.Controllers
             return NoContent();
         }
 
-        [HttpDelete("{projectId}"), Authorize(Roles = "Lecturer,Student")]
+        [HttpDelete("{projectId}"), Authorize(Roles = "Lecturer")]
         public async Task<ActionResult<ResponseDto<object>>> DeleteProject(
 
             int projectId)
