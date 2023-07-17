@@ -11,6 +11,7 @@ using Api.Services.Students;
 using FPLMS.Api.Enum;
 using Microsoft.AspNetCore.Authorization;
 using System.Data;
+using static Google.Apis.Requests.BatchRequest;
 
 namespace Api.Controllers
 {
@@ -106,6 +107,13 @@ namespace Api.Controllers
             var studentId = await _studentService.GetStudentIdByEmail(userEmail);
             var response = await _reportService.DeleteCycleReport(groupId, reportId, studentId);
             return Ok(response);
+        }
+
+        [HttpPut("/cycle-reports/feedback")]
+        public async  Task<ActionResult<ResponseDto<CycleReportDTO>>> FeedbackCycleReport([FromQuery(Name = "userEmail")] string userEmail, [FromBody] FeedbackCycleReportRequest feedbackCycleReportRequest)
+        {
+            ResponseDto<CycleReportDTO> response = await _reportService.FeedbackCycleReportAsync(feedbackCycleReportRequest, userEmail);
+            return response;
         }
 
         [HttpGet("progress-reports"), Authorize(Roles = "Lecturer,Student")]

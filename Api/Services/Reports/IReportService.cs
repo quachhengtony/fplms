@@ -25,5 +25,6 @@ namespace Api.Services.Reports
         public Task<ResponseDto<object>> UpdateProgressReportAsync(UpdateProgressReportRequest reportRequest, int studentId);
         public Task<ResponseDto<object>> DeleteProgressReportAsync(int groupId, int reportId, int studentId);
         public Task<ResponseDto<HashSet<CycleReportDTO>>> GetCycleReportInClassByLecturer(int classId, string userEmail);
+        public Task<ResponseDto<CycleReportDTO>> FeedbackCycleReportAsync(FeedbackCycleReportRequest feedbackCycleReportRequest, string userEmail);
     }
 }
