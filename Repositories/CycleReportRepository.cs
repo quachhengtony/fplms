@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using BusinessObjects.Models;
 using BusinessObjects.DbContexts;
 using Repositories.Interfaces;
+using MySql.Data.MySqlClient;
 
 namespace Repositories
 {
@@ -23,7 +24,10 @@ namespace Repositories
 
         public Task<int> AddFeedbackAsync(int reportId, string feedback, float mark)
         {
-            return dbContext.Database.ExecuteSqlRawAsync($"update cycle_report set feedback = '{feedback}', mark = {mark} where id = {reportId}");
+            return dbContext.Database.ExecuteSqlRawAsync("UPDATE cycle_report SET feedback = @feedback, mark = @mark WHERE id = @reportId",
+        new MySqlParameter("@feedback", feedback),
+        new MySqlParameter("@mark", mark),
+        new MySqlParameter("@reportId", reportId));
         }
 
         public Task<int> ExistsByGroupAndCycleNumberAsync(int groupId, int cycleNumber)
