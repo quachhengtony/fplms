@@ -249,7 +249,7 @@ namespace Api.Services.Reports
             var cycleReportDtoSet = cycleReportSet.Select(cycleReportEntity =>
             {
                 var dto = MapToCycleReportDTO(cycleReportEntity);
-                dto.GroupId = cycleReportEntity.Group.Id;
+                dto.GroupId = cycleReportEntity.GroupId;
                 return dto;
             }).ToHashSet();
 
@@ -403,7 +403,7 @@ namespace Api.Services.Reports
                 return new ResponseDto<CycleReportDTO>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = NOT_IN_CYCLE };
             }
 
-            if (await _cycleReportRepository.ExistsByGroupAndCycleNumberAsync(new Group(groupId), currentCycle.Value) == 0)
+            if (await _cycleReportRepository.ExistsByGroupAndCycleNumberAsync(new Group(groupId), currentCycle.Value) == 1)
             {
                 _logger.LogWarning("{CREATE_CYCLE_REPORT}{CYCLE_REPORT_EXISTS}");
                 return new ResponseDto<CycleReportDTO>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = CYCLE_REPORT_EXISTS };
@@ -416,7 +416,6 @@ namespace Api.Services.Reports
                 ResourceLink = reportRequest.ResourceLink,
                 GroupId = groupId
             };
-            cycleReport.Group = new Group(groupId);
             cycleReport.CycleNumber = currentCycle.Value;
 
             CycleReportDTO responseEntity = MapToCycleReportDTO(await _cycleReportRepository.SaveAsync(cycleReport));
@@ -577,8 +576,7 @@ namespace Api.Services.Reports
                 Content = reportRequest.Content,
                 GroupId = reportRequest.GroupId,
                 ReportTime = DateTime.UtcNow.Date,
-                Group = await _groupRepository.FindOneByIdAsync(groupId),
-                Student = await _studentRepository.FindOneById(studentId)
+                StudentId = studentId
             };
 
             await _progressReportRepository.SaveAsync(progressReport);
