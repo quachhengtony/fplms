@@ -109,8 +109,8 @@ namespace Api.Controllers
             return Ok(response);
         }
 
-        [HttpPut("/cycle-reports/feedback")]
-        public async  Task<ActionResult<ResponseDto<CycleReportDTO>>> FeedbackCycleReport([FromQuery(Name = "userEmail")] string userEmail, [FromBody] FeedbackCycleReportRequest feedbackCycleReportRequest)
+        [HttpPut("/cycle-reports/feedback"), Authorize(Roles = "Lecturer")]
+        public async  Task<ActionResult<ResponseDto<CycleReportDTO>>> FeedbackCycleReport([FromBody] FeedbackCycleReportRequest feedbackCycleReportRequest)
         {
             ResponseDto<CycleReportDTO> response = await _reportService.FeedbackCycleReportAsync(feedbackCycleReportRequest, userEmail);
             return response;
