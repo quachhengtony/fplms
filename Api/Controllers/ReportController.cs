@@ -109,7 +109,7 @@ namespace Api.Controllers
             return Ok(response);
         }
 
-        [HttpPut("/cycle-reports/feedback"), Authorize(Roles = "Lecturer")]
+        [HttpPut("cycle-reports/feedback"), Authorize(Roles = "Lecturer")]
         public async  Task<ActionResult<ResponseDto<CycleReportDTO>>> FeedbackCycleReport([FromBody] FeedbackCycleReportRequest feedbackCycleReportRequest)
         {
             var userEmail = (string)HttpContext.Items["userEmail"]!;

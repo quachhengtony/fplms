@@ -29,7 +29,7 @@ namespace Repositories
         public async Task<int> ExistsById(int projectId)
         {
             return await dbContext.Projects
-                .FromSqlRaw("SELECT * FROM project WHERE id = {1} ", projectId)
+                .FromSqlRaw("SELECT * FROM project WHERE id = {0} ", projectId)
                 .Select(p => p.Id)
                 .FirstOrDefaultAsync();
         }
