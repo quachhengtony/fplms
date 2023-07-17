@@ -3,6 +3,7 @@ using Api.Dto.Shared;
 using Api.Services.Constant;
 using BusinessObjects.Models;
 using FPLMS.Api.Dto;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Repositories;
 using Repositories.Interfaces;
@@ -635,6 +636,41 @@ namespace Api.Services.Reports
             int totalDays = timeSpan.Days;
             int currentCycle = (totalDays / cycleDuration) + 1;
             return currentCycle;
+        }
+
+        public async Task<ResponseDto<CycleReportDTO>> FeedbackCycleReportAsync(FeedbackCycleReportRequest feedbackCycleReportRequest, string userEmail)
+        {
+            _logger.LogInformation($"{FEEDBACK_CYCLE_REPORT}{feedbackCycleReportRequest}");
+            int? lecturerId = await _lecturerRepository.FindLecturerIdByEmailAsync(userEmail);
+            if (lecturerId == null || feedbackCycleReportRequest.GroupId == null || feedbackCycleReportRequest.ReportId == null ||
+                    !await _groupRepository.ExistsById(feedbackCycleReportRequest.GroupId) || !await _cycleReportRepository.ExistsById(feedbackCycleReportRequest.ReportId))
+            {
+                _logger.LogWarning($"{FEEDBACK_CYCLE_REPORT}{ServiceMessage.INVALID_ARGUMENT_MESSAGE}");
+                return new ResponseDto<CycleReportDTO> { code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
+            }
+            if ((await _groupRepository.IsGroupDisableAsync(feedbackCycleReportRequest.GroupId)) == 1)
+            {
+                _logger.LogWarning($"{FEEDBACK_CYCLE_REPORT}{GROUP_DISABLE}");
+                return new ResponseDto<CycleReportDTO> { code = ServiceStatusCode.BAD_REQUEST_STATUS, message = GROUP_DISABLE};
+            }
+            if (!lecturerId.Equals((await _groupRepository.FindOneByIdAsync(feedbackCycleReportRequest.GroupId)).Class.LecturerId))
+            {
+                _logger.LogWarning($"{FEEDBACK_CYCLE_REPORT}{LECTURER_NOT_MANAGE}");
+                return new ResponseDto<CycleReportDTO> { code = ServiceStatusCode.BAD_REQUEST_STATUS, message = LECTURER_NOT_MANAGE};
+            }
+            if ((await _cycleReportRepository.ExistsByIdAndGroupIdAsync(feedbackCycleReportRequest.GroupId, feedbackCycleReportRequest.ReportId)) == 0)
+            {
+                _logger.LogWarning($"{FEEDBACK_CYCLE_REPORT}{REPORT_NOT_IN_GROUP}");
+                return new ResponseDto<CycleReportDTO> { code = ServiceStatusCode.BAD_REQUEST_STATUS, message = REPORT_NOT_IN_GROUP};
+            }
+            await _cycleReportRepository.AddFeedbackAsync(feedbackCycleReportRequest.ReportId, feedbackCycleReportRequest.Feedback , feedbackCycleReportRequest.Mark.Value);
+            _logger.LogInformation("Feedback cycle report successful.");
+            return new ResponseDto<CycleReportDTO>
+            {
+                code = ServiceStatusCode.OK_STATUS,
+                message = ServiceMessage.SUCCESS_MESSAGE,
+                data = MapToCycleReportDTO(await _cycleReportRepository.GetByIdAsync(feedbackCycleReportRequest.ReportId))
+            };
         }
     }
 }
