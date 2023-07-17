@@ -45,24 +45,24 @@ namespace Api.Services.Projects
             _semesterRepository = semesterRepository;
         }
 
-        public async Task<ResponseDto<HashSet<ProjectDto>>> GetProjectFromClassByStudentAsync(int classId, string userEmail)
+        public async Task<ResponseDto<HashSet<ProjectDto>>> GetProjectFromClassByStudentAsync(int? classId, string? userEmail)
         {
             _logger.LogInformation("GetProjectFromClassByStudent(classId: {0}, userEmail: {1})", classId, userEmail);
             int studentId = await _studentRepository.FindStudentIdByEmail(userEmail);
-            if (studentId == 0 || classId == 0)
+            if (studentId == null || classId == null)
             {
                 _logger.LogWarning("{0}{1}", GET_PROJECT, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
                 return new ResponseDto<HashSet<ProjectDto>>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
             }
-            if (await _classRepository.ExistInClassAsync(studentId, classId) == 0)
+            if (await _classRepository.ExistInClassAsync(studentId, classId.Value) == 0)
             {
                 _logger.LogWarning("{0}{1}", GET_PROJECT, "Student is not in class");
                 return new ResponseDto<HashSet<ProjectDto>>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = "Student is not in class" };
             }
-            return await GetProjectFromClassAsync(classId);
+            return await GetProjectFromClassAsync(classId.Value);
         }
 
-        public async Task<ResponseDto<HashSet<ProjectDto>>> GetProjectByLecturerAsync(string semesterCode, int classId, string userEmail)
+        public async Task<ResponseDto<HashSet<ProjectDto>>> GetProjectByLecturerAsync(string? semesterCode, int? classId, string userEmail)
         {
             _logger.LogInformation("GetProjectByLecturer(semesterCode: {0}, classId: {1}, userEmail: {2})", semesterCode, classId, userEmail);
             int lecturerId = await _lecturerRepository.FindLecturerIdByEmailAsync(userEmail);
@@ -71,19 +71,19 @@ namespace Api.Services.Projects
                 _logger.LogWarning("{0}{1}", GET_PROJECT, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
                 return new ResponseDto<HashSet<ProjectDto>>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
             }
-            if (classId != 0)
+            if (classId != null)
             {
                 if (!await _classRepository.ExistsByIdAsync(classId))
                 {
                     _logger.LogWarning("{0}{1}", GET_PROJECT, ServiceMessage.ID_NOT_EXIST_MESSAGE);
                     return new ResponseDto<HashSet<ProjectDto>> { code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.ID_NOT_EXIST_MESSAGE };
                 }
-                if (!lecturerId.Equals((await _classRepository.FindOneByIdAsync(classId)).Lecturer.Id))
+                if (!lecturerId.Equals((await _classRepository.FindOneByIdAsync(classId.Value)).Lecturer.Id))
                 {
                     _logger.LogWarning("{0}{1}", GET_PROJECT, "Lecturer not manage class");
                     return new ResponseDto<HashSet<ProjectDto>>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = "Lecturer not manage class" };
                 }
-                return await GetProjectFromClassAsync(classId);
+                return await GetProjectFromClassAsync(classId.Value);
             }
 
             if (!string.IsNullOrEmpty(semesterCode))

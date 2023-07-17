@@ -37,18 +37,18 @@ namespace Api.Controllers
         [HttpGet, Authorize(Roles = "Lecturer,Student")]
         public Task<ResponseDto<HashSet<ProjectDto>>> GetAllProjects(
             [FromQuery(Name = "classId")] int? classId,
-            [FromQuery(Name = "semesterCode")] string semesterCode)
+            [FromQuery(Name = "semesterCode")] string? semesterCode)
         {
             var userEmail = (string)HttpContext.Items["userEmail"]!;
             var userRole = (string)HttpContext.Items["userRole"]!;
             if (userRole.Contains(RoleTypes.Lecturer))
             {
-                var projects = _projectService.GetProjectByLecturerAsync(semesterCode, classId.Value, userEmail).Result;
+                var projects = _projectService.GetProjectByLecturerAsync(semesterCode, classId, userEmail).Result;
                 return Task.FromResult(projects);
             }
             else if (userRole.Contains(RoleTypes.Student))
             {
-                var projects = _projectService.GetProjectFromClassByStudentAsync(classId.Value, userEmail);
+                var projects = _projectService.GetProjectFromClassByStudentAsync(classId, userEmail);
                 return projects;
             }
 

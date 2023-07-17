@@ -82,8 +82,8 @@ namespace Api.Services.Reports
                 Title = progressReport.Title,
                 Content = progressReport.Content,
                 ReportTime = progressReport.ReportTime,
-                GroupId = progressReport.Group.Id,
-                StudentId = progressReport.Student.Id,
+                GroupId = progressReport.GroupId,
+                StudentId = progressReport.StudentId,
                 // Map other properties here
             };
         }

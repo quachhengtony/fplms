@@ -223,6 +223,7 @@ namespace Api.Services.Meetings
         public async Task<ResponseDto<MeetingDto>> ScheduleMeetingByLecturerAsync(MeetingDto meetingDto, string userEmail)
         {
             _logger.LogInformation("{0}{1}", SCHEDULING_MEETING_MESSAGE, meetingDto);
+            meetingDto.LecturerId = await _lecturerRepository.FindLecturerIdByEmailAsync(userEmail);
             // Check whether the group is in the class of the lecturer
             if (meetingDto.GroupId == 0 || !(await _groupRepository.FindLectureIdOfGroupAsync(meetingDto.GroupId)).Equals(meetingDto.LecturerId))
             {
@@ -236,9 +237,8 @@ namespace Api.Services.Meetings
             }
             meetingDto.Id = 0;
             var meeting = MapDtoToMeeting(meetingDto);
-            meeting.Lecturer = new Lecturer { Id = meetingDto.LecturerId };
-            meeting.Group = new Group { Id = meetingDto.GroupId };
-            meeting.LecturerId = await _lecturerRepository.FindLecturerIdByEmailAsync(userEmail);
+            meeting.GroupId =  meetingDto.GroupId;
+            meeting.LecturerId = meetingDto.LecturerId.Value;
             meetingDto.Id = await _meetingRepository.SaveAsync(meeting);
             _logger.LogInformation("{0}{1}", SCHEDULING_MEETING_MESSAGE, ServiceMessage.SUCCESS_MESSAGE);
             return new ResponseDto<MeetingDto>{ code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE, data = meetingDto };
@@ -291,8 +291,8 @@ namespace Api.Services.Meetings
                 ScheduleTime = meeting.ScheduleTime.Value,
                 Link = meeting.Link,
                 Feedback = meeting.Feedback,
-                LecturerId = meeting.Lecturer.Id,
-                GroupId = meeting.Group.Id
+                LecturerId = meeting.LecturerId,
+                GroupId = meeting.GroupId
             };
         }
 
