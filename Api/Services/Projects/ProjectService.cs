@@ -162,7 +162,7 @@ namespace Api.Services.Projects
             }
             var project = MapToProject(ProjectDto);
             project.Lecturer = await _lecturerRepository.FindOneByEmailAsync(userEmail);
-            int id = (await _projectRepository.SaveAsync(project));
+            int id = await _projectRepository.SaveAsync(project);
             _logger.LogInformation("Add project success.");
             return new ResponseDto<int> { code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE, data = id };
         }
@@ -237,7 +237,7 @@ namespace Api.Services.Projects
                 Actors = projectEntity.Actors,
                 Requirements = projectEntity.Requirements,
                 Theme = projectEntity.Theme,
-                SubjectId = projectEntity.SubjectId.Value,
+                SubjectId = projectEntity.SubjectId,
                 SemesterCode = projectEntity.SemesterCode,
                 Context = projectEntity.Context
                 // Map other properties

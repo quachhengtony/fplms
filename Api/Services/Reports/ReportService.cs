@@ -534,8 +534,7 @@ namespace Api.Services.Reports
                 Content = reportRequest.Content,
                 GroupId = reportRequest.GroupId,
                 ReportTime = DateTime.UtcNow.Date,
-                Group = await _groupRepository.FindOneByIdAsync(groupId),
-                Student = await _studentRepository.FindOneById(studentId)
+                StudentId = studentId
             };
 
             await _progressReportRepository.SaveAsync(progressReport);
