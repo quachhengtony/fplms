@@ -3,6 +3,7 @@ namespace FPLMS.Api.Controllers;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FPLMS.Api.Dto;
+using FPLMS.Api.Enum;
 using FPLMS.Api.Filters;
 using FPLMS.Api.Services;
 using global::Api.Dto.Response;
@@ -60,10 +61,10 @@ public class ClassController : ControllerBase
     public Task<ResponseDto<ClassDto>> GetClassDetail(int classId) {
         string userEmail = (string)HttpContext.Items["userEmail"]!;
         string userRole = (string)HttpContext.Items["userRole"]!;
-        if (userRole == "LECTURER") {
+        if (userRole == RoleTypes.Lecturer) {
 			return _classService.GetClassDetailByLecture(userEmail, classId);
 		}
-		if (userRole == "STUDENT") {
+		if (userRole == RoleTypes.Student) {
 			return _classService.GetClassDetailByStudent(userEmail, classId);
 		}
         return Task.FromResult(new ResponseDto<ClassDto> { code = 403, message = "Not have role access" });
