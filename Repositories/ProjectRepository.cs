@@ -67,11 +67,11 @@ namespace Repositories
         }
 
 
-        public async Task<int> SaveAsync(Project project)
+        public Task<int> SaveAsync(Project project)
         {
             dbContext.Projects.Add(project);
-            await dbContext.SaveChangesAsync();
-            return project.Id;
+            dbContext.SaveChangesAsync();
+            return Task.FromResult(project.Id);
         }
     }
 }
