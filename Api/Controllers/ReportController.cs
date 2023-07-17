@@ -112,6 +112,7 @@ namespace Api.Controllers
         [HttpPut("/cycle-reports/feedback"), Authorize(Roles = "Lecturer")]
         public async  Task<ActionResult<ResponseDto<CycleReportDTO>>> FeedbackCycleReport([FromBody] FeedbackCycleReportRequest feedbackCycleReportRequest)
         {
+            var userEmail = (string)HttpContext.Items["userEmail"]!;
             ResponseDto<CycleReportDTO> response = await _reportService.FeedbackCycleReportAsync(feedbackCycleReportRequest, userEmail);
             return response;
         }
