@@ -239,7 +239,7 @@ namespace Api.Services.Meetings
             var meeting = MapDtoToMeeting(meetingDto);
             meeting.GroupId =  meetingDto.GroupId;
             meeting.LecturerId = meetingDto.LecturerId.Value;
-            meetingDto.Id = await _meetingRepository.SaveAsync(meeting);
+            meetingDto.Id = await _meetingRepository.AddAsync(meeting);
             _logger.LogInformation("{0}{1}", SCHEDULING_MEETING_MESSAGE, ServiceMessage.SUCCESS_MESSAGE);
             return new ResponseDto<MeetingDto>{ code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE, data = meetingDto };
         }
@@ -263,7 +263,7 @@ namespace Api.Services.Meetings
             meeting.ScheduleTime = meetingDto.ScheduleTime;
             meeting.Title = meetingDto.Title;
             meeting.LecturerId = await _lecturerRepository.FindLecturerIdByEmailAsync(userEmail);
-            await _meetingRepository.SaveAsync(meeting);
+            await _meetingRepository.UpdateAsync(meeting);
             _logger.LogInformation("{0}{1}", UPDATE_MEETING_MESSAGE, ServiceMessage.SUCCESS_MESSAGE);
             return new ResponseDto<object>{ code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE };
         }

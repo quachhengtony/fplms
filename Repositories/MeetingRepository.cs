@@ -56,7 +56,13 @@ namespace Repositories
                 .AnyAsync(m => m.Id == meetingId);
         }
 
-        public async Task<int> SaveAsync(Meeting meeting)
+        public async Task<int> AddAsync(Meeting meeting)
+        {
+            dbContext.Meetings.Add(meeting);
+            await dbContext.SaveChangesAsync();
+            return meeting.Id;
+        }
+        public async Task<int> UpdateAsync(Meeting meeting)
         {
             dbContext.Meetings.Add(meeting);
             await dbContext.SaveChangesAsync();

@@ -61,7 +61,7 @@ namespace Api.Services.Semesters
             }
 
             var semester = MapToSemesterEntity(semesterDto);
-            await _semesterRepository.SaveAsync(semester);
+            await _semesterRepository.AddAsync(semester);
 
             _logger.LogInformation("Create semester success");
 
@@ -96,7 +96,7 @@ namespace Api.Services.Semesters
             }
 
             var semester = MapToSemesterEntity(semesterDto);
-            await _semesterRepository.SaveAsync(semester);
+            await _semesterRepository.UpdateAsync(semester);
 
             _logger.LogInformation("Update semester success");
 

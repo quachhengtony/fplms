@@ -419,7 +419,7 @@ namespace Api.Services.Reports
             };
             cycleReport.CycleNumber = currentCycle.Value;
 
-            CycleReportDTO responseEntity = MapToCycleReportDTO(await _cycleReportRepository.SaveAsync(cycleReport));
+            CycleReportDTO responseEntity = MapToCycleReportDTO(await _cycleReportRepository.AddAsync(cycleReport));
 
             _logger.LogInformation("Add cycle report success");
             return new ResponseDto<CycleReportDTO> { code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE, data = responseEntity };
@@ -460,7 +460,7 @@ namespace Api.Services.Reports
             cycleReport.Content = reportRequest.Content;
             cycleReport.Title = reportRequest.Title;
             cycleReport.ResourceLink = reportRequest.ResourceLink;
-            CycleReportDTO responseEntity = MapToCycleReportDTO(await _cycleReportRepository.SaveAsync(cycleReport));
+            CycleReportDTO responseEntity = MapToCycleReportDTO(await _cycleReportRepository.UpdateAsync(cycleReport));
             _logger.LogInformation("Update cycle report success");
             return new ResponseDto<CycleReportDTO>{ code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE, data = responseEntity };
         }
@@ -537,7 +537,7 @@ namespace Api.Services.Reports
                 StudentId = studentId
             };
 
-            await _progressReportRepository.SaveAsync(progressReport);
+            await _progressReportRepository.AddAsync(progressReport);
             _logger.LogInformation("Add progress report success");
             return new ResponseDto<object>{ code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE };
         }
@@ -580,7 +580,7 @@ namespace Api.Services.Reports
                 StudentId = studentId
             };
 
-            await _progressReportRepository.SaveAsync(progressReport);
+            await _progressReportRepository.UpdateAsync(progressReport);
             _logger.LogInformation("Update progress report success");
             return new ResponseDto<object>{ code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE };
         }

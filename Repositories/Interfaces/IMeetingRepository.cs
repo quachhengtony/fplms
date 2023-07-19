@@ -19,7 +19,8 @@ namespace Repositories.Interfaces
         
         public Task<Meeting> FindOneByIdAsync(int meetingId);
         Task<bool> ExistsById(int meetingId);
-        Task<int> SaveAsync(Meeting meeting);
+        Task<int> AddAsync(Meeting meeting);
+        Task<int> UpdateAsync(Meeting meeting);
         Task DeleteByIdAsync(int meetingId);
     }
 }

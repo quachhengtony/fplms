@@ -60,9 +60,15 @@ namespace Repositories
             return await dbContext.CycleReports.FindAsync(reportId);
         }
 
-        public async Task<CycleReport> SaveAsync(CycleReport cycleReport)
+        public async Task<CycleReport> AddAsync(CycleReport cycleReport)
         {
             dbContext.CycleReports.Add(cycleReport);
+            await dbContext.SaveChangesAsync();
+            return cycleReport;
+        }
+        public async Task<CycleReport> UpdateAsync(CycleReport cycleReport)
+        {
+            dbContext.CycleReports.Update(cycleReport);
             await dbContext.SaveChangesAsync();
             return cycleReport;
         }

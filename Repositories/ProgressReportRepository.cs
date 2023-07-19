@@ -69,7 +69,12 @@ namespace Repositories
             return await dbContext.ProgressReports.FindAsync(reportId);
         }
 
-        public async Task SaveAsync(ProgressReport progressReport)
+        public async Task AddAsync(ProgressReport progressReport)
+        {
+            dbContext.ProgressReports.Add(progressReport);
+            await dbContext.SaveChangesAsync();
+        }
+        public async Task UpdateAsync(ProgressReport progressReport)
         {
             dbContext.ProgressReports.Add(progressReport);
             await dbContext.SaveChangesAsync();

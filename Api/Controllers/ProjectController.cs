@@ -56,7 +56,7 @@ namespace Api.Controllers
         }
 
         [HttpPut("{projectId}"), Authorize(Roles = "Student")]
-        public async Task<ActionResult> ChooseProject(
+        public async Task<ResponseDto<object>> ChooseProject(
 
             [FromQuery(Name = "classId")] int classId,
             int projectId)
@@ -64,8 +64,7 @@ namespace Api.Controllers
             var userEmail = (string)HttpContext.Items["userEmail"]!;
             var userRole = (string)HttpContext.Items["userRole"]!;
             var studentId = await _studentService.GetStudentIdByEmail(userEmail);
-            await _groupService.ChooseProjectInGroup(classId, projectId, studentId);
-            return NoContent();
+            return await _groupService.ChooseProjectInGroup(classId, projectId, studentId);
         }
 
         [HttpPost, Authorize(Roles = "Lecturer")]
@@ -79,25 +78,23 @@ namespace Api.Controllers
         }
 
         [HttpPut, Authorize(Roles = "Lecturer")]
-        public async Task<ActionResult<ResponseDto<object>>> UpdateProject(
+        public async Task<ResponseDto<object>> UpdateProject(
 
             [FromBody] ProjectDto ProjectDto)
         {
             var userEmail = (string)HttpContext.Items["userEmail"]!;
             var userRole = (string)HttpContext.Items["userRole"]!;
-            await _projectService.UpdateProjectAsync(ProjectDto, userEmail);
-            return NoContent();
+            return await _projectService.UpdateProjectAsync(ProjectDto, userEmail);
         }
 
         [HttpDelete("{projectId}"), Authorize(Roles = "Lecturer")]
-        public async Task<ActionResult<ResponseDto<object>>> DeleteProject(
+        public async Task<ResponseDto<object>> DeleteProject(
 
             int projectId)
         {
             var userEmail = (string)HttpContext.Items["userEmail"]!;
             var userRole = (string)HttpContext.Items["userRole"]!;
-            await _projectService.DeleteProjectAsync(projectId, userEmail);
-            return NoContent();
+            return await _projectService.DeleteProjectAsync(projectId, userEmail);
         }
     }
 }

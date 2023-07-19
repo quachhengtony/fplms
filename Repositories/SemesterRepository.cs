@@ -35,7 +35,13 @@ namespace Repositories
             return (DateTime)await dbContext.Semesters.Where(s => s.Code == code).Select(s => s.StartDate).FirstOrDefaultAsync();
         }
 
-        public async Task SaveAsync(Semester semester)
+        public async Task AddAsync(Semester semester)
+        {
+            dbContext.Semesters.Add(semester);
+            await dbContext.SaveChangesAsync();
+        }
+
+        public async Task UpdateAsync(Semester semester)
         {
             dbContext.Semesters.Add(semester);
             await dbContext.SaveChangesAsync();

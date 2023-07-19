@@ -63,13 +63,25 @@ namespace Repositories
 
         public async Task DeleteProject(int projectId)
         {
-            await dbContext.Database.ExecuteSqlInterpolatedAsync($"UPDATE project SET is_disable = 1 WHERE id = {projectId}");
+            var projectToDelete = await dbContext.Projects.FirstOrDefaultAsync(p => p.Id == projectId);
+
+            if (projectToDelete != null)
+            {
+                projectToDelete.IsDisable = 1; // Assuming your column is named "IsDisable" instead of "is_disable"
+                await dbContext.SaveChangesAsync();
+            }
         }
 
 
-        public Task<int> SaveAsync(Project project)
+        public Task<int> AddAsync(Project project)
         {
             dbContext.Projects.Add(project);
+            dbContext.SaveChangesAsync();
+            return Task.FromResult(project.Id);
+        }
+        public Task<int> UpdateAsync(Project project)
+        {
+            dbContext.Projects.Update(project);
             dbContext.SaveChangesAsync();
             return Task.FromResult(project.Id);
         }
