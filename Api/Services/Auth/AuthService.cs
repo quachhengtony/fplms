@@ -45,11 +45,13 @@ sealed class AuthService : IAuthService
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Email, payload.Email),
-                new Claim(ClaimTypes.Role, roleClaim)
+                new Claim("email", payload.Email),
+                new Claim(ClaimTypes.Role, roleClaim),
+                new Claim("role", roleClaim),
             };
             var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_config["Token:Secret"]));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
-            var token = new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken(claims: claims, expires: DateTime.Now.AddMinutes(30), signingCredentials: credentials));
+            var token = new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken(claims: claims, expires: DateTime.Now.AddMinutes(120), signingCredentials: credentials));
             return token;
         }
         catch (Exception ex)

@@ -3,6 +3,7 @@ using Api.Dto.Shared;
 using Api.Services.Constant;
 using BusinessObjects.Models;
 using FPLMS.Api.Dto;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Repositories;
 using Repositories.Interfaces;
@@ -15,7 +16,7 @@ using static Google.Apis.Requests.BatchRequest;
 
 namespace Api.Services.Reports
 {
-    public class ReportService
+    public class ReportService : IReportService
     {
         private readonly ILogger<ReportService> _logger;
         private readonly ICycleReportRepository _cycleReportRepository;
@@ -44,14 +45,10 @@ namespace Api.Services.Reports
         private const string GET_PROGRESS_REPORT = "Get progress report: ";
         private const string FEEDBACK_CYCLE_REPORT = "Feedback cycle report: ";
         public ReportService(
-            ILogger<ReportService> logger,
-            ICycleReportRepository cycleReportRepository,
-            IClassRepository classRepository,
-            IGroupRepository groupRepository,
-            IStudentGroupRepository studentGroupRepository,
-            IStudentRepository studentRepository,
-            ILecturerRepository lecturerRepository,
-            IProgressReportRepository progressReportRepository)
+    ILogger<ReportService> logger, ICycleReportRepository cycleReportRepository, IClassRepository classRepository,
+    IGroupRepository groupRepository, IStudentGroupRepository studentGroupRepository,
+    IStudentRepository studentRepository, ILecturerRepository lecturerRepository,
+    IProgressReportRepository progressReportRepository)
         {
             _logger = logger;
             _cycleReportRepository = cycleReportRepository;
@@ -62,7 +59,6 @@ namespace Api.Services.Reports
             _lecturerRepository = lecturerRepository;
             _progressReportRepository = progressReportRepository;
         }
-
         private CycleReportDTO MapToCycleReportDTO(CycleReport cycleReport)
         {
             return new CycleReportDTO
@@ -73,8 +69,8 @@ namespace Api.Services.Reports
                 CycleNumber = cycleReport.CycleNumber,
                 Feedback = cycleReport.Feedback,
                 ResourceLink = cycleReport.ResourceLink,
-                Mark = cycleReport.Mark.Value,
-                GroupId = cycleReport.Group.Id
+                Mark = cycleReport.Mark,
+                GroupId = cycleReport.GroupId
                 // Map other properties here
             };
         }
@@ -87,8 +83,8 @@ namespace Api.Services.Reports
                 Title = progressReport.Title,
                 Content = progressReport.Content,
                 ReportTime = progressReport.ReportTime,
-                GroupId = progressReport.Group.Id,
-                StudentId = progressReport.Student.Id,
+                GroupId = progressReport.GroupId,
+                StudentId = progressReport.StudentId,
                 // Map other properties here
             };
         }
@@ -100,13 +96,13 @@ namespace Api.Services.Reports
             if (lecturerId == null || reportId <= 0)
             {
                 _logger.LogWarning("{GET_CYCLE_REPORT}{INVALID_ARGUMENT_MESSAGE}", GET_CYCLE_REPORT, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
-                return new ResponseDto<CycleReportDTO>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                return new ResponseDto<CycleReportDTO>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
             }
 
             if (!await _cycleReportRepository.ExistsById(reportId))
             {
                 _logger.LogWarning("{GET_CYCLE_REPORT}{ID_NOT_EXIST_MESSAGE}", GET_CYCLE_REPORT, ServiceMessage.ID_NOT_EXIST_MESSAGE);
-                return new ResponseDto<CycleReportDTO>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.ID_NOT_EXIST_MESSAGE);
+                return new ResponseDto<CycleReportDTO>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.ID_NOT_EXIST_MESSAGE };
             }
 
             CycleReport cycleReport = await _cycleReportRepository.GetByIdAsync(reportId);
@@ -114,12 +110,12 @@ namespace Api.Services.Reports
             if (!lecturerId.Equals(cycleReport.Group.Class.Lecturer.Id))
             {
                 _logger.LogWarning("{GET_CYCLE_REPORT}{LECTURER_NOT_MANAGE}", GET_CYCLE_REPORT, LECTURER_NOT_MANAGE);
-                return new ResponseDto<CycleReportDTO>(ServiceStatusCode.BAD_REQUEST_STATUS, LECTURER_NOT_MANAGE);
+                return new ResponseDto<CycleReportDTO>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = LECTURER_NOT_MANAGE };
             }
 
             CycleReportDTO cycleReportDTO = MapToCycleReportDTO(cycleReport);
             _logger.LogInformation("Get cycle report detail success");
-            return new ResponseDto<CycleReportDTO>(ServiceStatusCode.OK_STATUS, ServiceMessage.SUCCESS_MESSAGE, cycleReportDTO);
+            return new ResponseDto<CycleReportDTO>{ code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE, data = cycleReportDTO };
         }
 
         public async Task<ResponseDto<CycleReportDTO>> GetCycleReportDetailByStudentAsync(string userEmail, int reportId)
@@ -129,13 +125,13 @@ namespace Api.Services.Reports
             if (studentId == null || reportId <= 0)
             {
                 _logger.LogWarning("{GET_CYCLE_REPORT}{INVALID_ARGUMENT_MESSAGE}", GET_CYCLE_REPORT, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
-                return new ResponseDto<CycleReportDTO>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                return new ResponseDto<CycleReportDTO>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
             }
 
             if (!await _cycleReportRepository.ExistsById(reportId))
             {
                 _logger.LogWarning("{GET_CYCLE_REPORT}{ID_NOT_EXIST_MESSAGE}", GET_CYCLE_REPORT, ServiceMessage.ID_NOT_EXIST_MESSAGE);
-                return new ResponseDto<CycleReportDTO>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.ID_NOT_EXIST_MESSAGE);
+                return new ResponseDto<CycleReportDTO>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.ID_NOT_EXIST_MESSAGE };
             }
 
             CycleReport cycleReport = await _cycleReportRepository.GetByIdAsync(reportId);
@@ -143,12 +139,12 @@ namespace Api.Services.Reports
             if (await _studentGroupRepository.IsStudentExistInGroup(cycleReport.Group.Id, (int)studentId) == 0)
             {
                 _logger.LogWarning("{GET_CYCLE_REPORT}{NOT_IN_GROUP}", GET_CYCLE_REPORT, NOT_IN_GROUP);
-                return new ResponseDto<CycleReportDTO>(ServiceStatusCode.BAD_REQUEST_STATUS, NOT_IN_GROUP);
+                return new ResponseDto<CycleReportDTO>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = NOT_IN_GROUP };
             }
 
             CycleReportDTO cycleReportDTO = MapToCycleReportDTO(cycleReport);
             _logger.LogInformation("Get cycle report detail success");
-            return new ResponseDto<CycleReportDTO>(ServiceStatusCode.OK_STATUS, ServiceMessage.SUCCESS_MESSAGE, cycleReportDTO);
+            return new ResponseDto<CycleReportDTO>{ code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE, data = cycleReportDTO };
         }
 
         public async Task<ResponseDto<ProgressReportDTO>> GetProgressReportDetailByLecturerAsync(string userEmail, int reportId)
@@ -158,13 +154,13 @@ namespace Api.Services.Reports
             if (lecturerId == null || reportId <= 0)
             {
                 _logger.LogWarning("{GET_PROGRESS_REPORT}{INVALID_ARGUMENT_MESSAGE}", GET_PROGRESS_REPORT, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
-                return new ResponseDto<ProgressReportDTO>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                return new ResponseDto<ProgressReportDTO>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
             }
 
             if (!await _progressReportRepository.ExistsById(reportId))
             {
                 _logger.LogWarning("{GET_PROGRESS_REPORT}{ID_NOT_EXIST_MESSAGE}", GET_PROGRESS_REPORT, ServiceMessage.ID_NOT_EXIST_MESSAGE);
-                return new ResponseDto<ProgressReportDTO>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.ID_NOT_EXIST_MESSAGE);
+                return new ResponseDto<ProgressReportDTO>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.ID_NOT_EXIST_MESSAGE };
             }
 
             ProgressReport progressReport = await _progressReportRepository.GetByIdAsync(reportId);
@@ -172,12 +168,12 @@ namespace Api.Services.Reports
             if (!lecturerId.Equals(progressReport.Group.Class.Lecturer.Id))
             {
                 _logger.LogWarning("{GET_PROGRESS_REPORT}{LECTURER_NOT_MANAGE}", GET_PROGRESS_REPORT, LECTURER_NOT_MANAGE);
-                return new ResponseDto<ProgressReportDTO>(ServiceStatusCode.BAD_REQUEST_STATUS, LECTURER_NOT_MANAGE);
+                return new ResponseDto<ProgressReportDTO>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = LECTURER_NOT_MANAGE };
             }
 
             ProgressReportDTO progressReportDTO = MapToProgressReportDTO(progressReport);
             _logger.LogInformation("Get progress report detail success");
-            return new ResponseDto<ProgressReportDTO>(ServiceStatusCode.OK_STATUS, ServiceMessage.SUCCESS_MESSAGE, progressReportDTO);
+            return new ResponseDto<ProgressReportDTO>{ code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE, data = progressReportDTO };
         }
 
         public async Task<ResponseDto<ProgressReportDTO>> GetProgressReportDetailByStudentAsync(string userEmail, int reportId)
@@ -187,13 +183,13 @@ namespace Api.Services.Reports
             if (studentId <= 0 || reportId <= 0)
             {
                 _logger.LogWarning("{GET_PROGRESS_REPORT}{INVALID_ARGUMENT_MESSAGE}", GET_PROGRESS_REPORT, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
-                return new ResponseDto<ProgressReportDTO>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                return new ResponseDto<ProgressReportDTO>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
             }
 
             if (!await _progressReportRepository.ExistsById(reportId))
             {
                 _logger.LogWarning("{GET_PROGRESS_REPORT}{ID_NOT_EXIST_MESSAGE}", GET_PROGRESS_REPORT, ServiceMessage.ID_NOT_EXIST_MESSAGE);
-                return new ResponseDto<ProgressReportDTO>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.ID_NOT_EXIST_MESSAGE);
+                return new ResponseDto<ProgressReportDTO>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.ID_NOT_EXIST_MESSAGE };
             }
 
             ProgressReport progressReport = await _progressReportRepository.GetByIdAsync(reportId);
@@ -201,12 +197,12 @@ namespace Api.Services.Reports
             if (await _studentGroupRepository.IsStudentExistInGroup(progressReport.Group.Id, (int)studentId) == 0)
             {
                 _logger.LogWarning("{GET_PROGRESS_REPORT}{NOT_IN_GROUP}", GET_PROGRESS_REPORT, NOT_IN_GROUP);
-                return new ResponseDto<ProgressReportDTO>(ServiceStatusCode.BAD_REQUEST_STATUS, NOT_IN_GROUP);
+                return new ResponseDto<ProgressReportDTO>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = NOT_IN_GROUP };
             }
 
             ProgressReportDTO progressReportDTO = MapToProgressReportDTO(progressReport);
             _logger.LogInformation("Get progress report detail success");
-            return new ResponseDto<ProgressReportDTO>(ServiceStatusCode.OK_STATUS, ServiceMessage.SUCCESS_MESSAGE, progressReportDTO);
+            return new ResponseDto<ProgressReportDTO>{ code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE, data = progressReportDTO };
         }
 
         public async Task<ResponseDto<HashSet<CycleReportDTO>>> GetCycleReportInGroupByLecturerAsync(int? groupId, string userEmail)
@@ -216,16 +212,50 @@ namespace Api.Services.Reports
             if (lecturerId == null || groupId == null || groupId == 0)
             {
                 _logger.LogWarning("{GET_CYCLE_REPORT}{INVALID_ARGUMENT_MESSAGE}", GET_CYCLE_REPORT, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
-                return new ResponseDto<HashSet<CycleReportDTO>>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                return new ResponseDto<HashSet<CycleReportDTO>>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
             }
 
             if (!lecturerId.Equals((await _groupRepository.FindOneByIdAsync((int)groupId)).Class.LecturerId))
             {
                 _logger.LogWarning("{GET_CYCLE_REPORT}{LECTURER_NOT_MANAGE}", GET_CYCLE_REPORT, LECTURER_NOT_MANAGE);
-                return new ResponseDto<HashSet<CycleReportDTO>>(ServiceStatusCode.BAD_REQUEST_STATUS, LECTURER_NOT_MANAGE);
+                return new ResponseDto<HashSet<CycleReportDTO>>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = LECTURER_NOT_MANAGE };
             }
 
             return await GetCycleReportInGroup(groupId);
+        }
+
+        public async Task<ResponseDto<HashSet<CycleReportDTO>>> GetCycleReportInClassByLecturer(int classId, string userEmail)
+        {
+            _logger.LogInformation("GetCycleReportInClassByLecturer(classId: {classId}, userEmail: {userEmail})", classId, userEmail);
+
+            int? lecturerId = await _lecturerRepository.FindLecturerIdByEmailAsync(userEmail);
+            if (lecturerId == null || classId == null || !await _classRepository.ExistsByIdAsync(classId))
+            {
+                _logger.LogWarning("{GET_CYCLE_REPORT}{INVALID_ARGUMENT_MESSAGE}");
+                return new ResponseDto<HashSet<CycleReportDTO>> { code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
+            }
+            if (!lecturerId.Equals((await _classRepository.FindOneByIdAsync(classId)).LecturerId))
+            {
+                _logger.LogWarning("{GET_CYCLE_REPORT}{LECTURER_NOT_MANAGE}");
+                return new ResponseDto<HashSet<CycleReportDTO>> { code = ServiceStatusCode.BAD_REQUEST_STATUS, message = LECTURER_NOT_MANAGE };
+            }
+
+            var cycleReportSet = new HashSet<CycleReport>();
+
+            foreach (var group in (await _classRepository.FindOneByIdAsync(classId)).Groups)
+            {
+                cycleReportSet.UnionWith(group.CycleReports);
+            }
+
+            var cycleReportDtoSet = cycleReportSet.Select(cycleReportEntity =>
+            {
+                var dto = MapToCycleReportDTO(cycleReportEntity);
+                dto.GroupId = cycleReportEntity.GroupId;
+                return dto;
+            }).ToHashSet();
+
+            _logger.LogInformation("Get cycle report from class success");
+            return new ResponseDto<HashSet<CycleReportDTO>> { code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE, data = cycleReportDtoSet };
         }
 
         public async Task<ResponseDto<HashSet<CycleReportDTO>>> GetCycleReportInGroupByStudentAsync(int? groupId, string userEmail)
@@ -235,13 +265,13 @@ namespace Api.Services.Reports
             if (studentId == null || groupId == null)
             {
                 _logger.LogWarning("{GET_CYCLE_REPORT}{INVALID_ARGUMENT_MESSAGE}", GET_CYCLE_REPORT, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
-                return new ResponseDto<HashSet<CycleReportDTO>>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                return new ResponseDto<HashSet<CycleReportDTO>>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
             }
 
             if (await _studentGroupRepository.IsStudentExistInGroup((int)groupId, (int)studentId) == 0)
             {
                 _logger.LogWarning("{GET_CYCLE_REPORT}{NOT_IN_GROUP}", GET_CYCLE_REPORT, NOT_IN_GROUP);
-                return new ResponseDto<HashSet<CycleReportDTO>>(ServiceStatusCode.BAD_REQUEST_STATUS, NOT_IN_GROUP);
+                return new ResponseDto<HashSet<CycleReportDTO>>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = NOT_IN_GROUP };
             }
             return await GetCycleReportInGroup(groupId);
         }
@@ -253,7 +283,7 @@ namespace Api.Services.Reports
             if (groupId == 0 || groupId == null || !(await _groupRepository.ExistsById((int)groupId)))
             {
                 _logger.LogWarning("{GET_CYCLE_REPORT}{ServiceMessage.INVALID_ARGUMENT_MESSAGE}");
-                return new ResponseDto<HashSet<CycleReportDTO>>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                return new ResponseDto<HashSet<CycleReportDTO>>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
             }
 
             HashSet<CycleReport> cycleReportSet = (await _cycleReportRepository.FindByGroupAsync(new Group((int)groupId))).ToHashSet();
@@ -261,47 +291,47 @@ namespace Api.Services.Reports
             HashSet<CycleReportDTO> cycleReportDtoSet = cycleReportSet.Select(cycleReportEntity =>
             {
                 CycleReportDTO dto = MapToCycleReportDTO(cycleReportEntity);
-                dto.GroupId = cycleReportEntity.Group.Id;
+                dto.GroupId = cycleReportEntity.GroupId;
                 return dto;
             }).ToHashSet();
 
             _logger.LogInformation("Get cycle report from group success");
-            return new ResponseDto<HashSet<CycleReportDTO>>(ServiceStatusCode.OK_STATUS, ServiceMessage.SUCCESS_MESSAGE, cycleReportDtoSet);
+            return new ResponseDto<HashSet<CycleReportDTO>>{ code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE, data = cycleReportDtoSet };
         }
 
-        public async Task<ResponseDto<HashSet<ProgressReportDTO>>> GetProgressReportInGroupByLecturerAsync(int classId, int groupId, DateTime startDate, DateTime endDate, string userEmail)
+        public async Task<ResponseDto<HashSet<ProgressReportDTO>>> GetProgressReportInGroupByLecturerAsync(int classId, int groupId, DateTime? startDate, DateTime? endDate, string userEmail)
         {
             _logger.LogInformation("GetProgressReportInGroupByLecturerAsync(classId: {classId}, groupId: {groupId}, startDate: {startDate}, endDate: {endDate}, userEmail: {userEmail})", classId, groupId, startDate, endDate, userEmail);
             int? lecturerId = await _lecturerRepository.FindLecturerIdByEmailAsync(userEmail);
             if (lecturerId == null)
             {
                 _logger.LogWarning("{GET_PROGRESS_REPORT}{INVALID_ARGUMENT_MESSAGE}", GET_PROGRESS_REPORT, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
-                return new ResponseDto<HashSet<ProgressReportDTO>>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                return new ResponseDto<HashSet<ProgressReportDTO>>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
             }
 
             if (!lecturerId.Equals((await _classRepository.FindOneByIdAsync(classId)).LecturerId))
             {
                 _logger.LogWarning("{GET_PROGRESS_REPORT}{LECTURER_NOT_MANAGE}", GET_PROGRESS_REPORT, LECTURER_NOT_MANAGE);
-                return new ResponseDto<HashSet<ProgressReportDTO>>(ServiceStatusCode.BAD_REQUEST_STATUS, LECTURER_NOT_MANAGE);
+                return new ResponseDto<HashSet<ProgressReportDTO>>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = LECTURER_NOT_MANAGE };
             }
 
             return await GetProgressReportInGroup(classId, groupId, startDate, endDate);
         }
 
-        public async Task<ResponseDto<HashSet<ProgressReportDTO>>> GetProgressReportInGroupByStudentAsync(int classId, int groupId, DateTime startDate, DateTime endDate, string userEmail)
+        public async Task<ResponseDto<HashSet<ProgressReportDTO>>> GetProgressReportInGroupByStudentAsync(int classId, int groupId, DateTime? startDate, DateTime? endDate, string userEmail)
         {
             _logger.LogInformation("GetProgressReportInGroupByStudentAsync(classId: {classId}, groupId: {groupId}, startDate: {startDate}, endDate: {endDate}, userEmail: {userEmail})", classId, groupId, startDate, endDate, userEmail);
             int? studentId = await _studentRepository.FindStudentIdByEmail(userEmail);
             if (studentId == null)
             {
                 _logger.LogWarning("{GET_PROGRESS_REPORT}{INVALID_ARGUMENT_MESSAGE}", GET_PROGRESS_REPORT, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
-                return new ResponseDto<HashSet<ProgressReportDTO>>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                return new ResponseDto<HashSet<ProgressReportDTO>>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
             }
 
             if (await _studentGroupRepository.IsStudentExistInGroup(groupId, (int)studentId) <= 0)
             {
                 _logger.LogWarning("{GET_PROGRESS_REPORT}{NOT_IN_GROUP}", GET_PROGRESS_REPORT, NOT_IN_GROUP);
-                return new ResponseDto<HashSet<ProgressReportDTO>>(ServiceStatusCode.BAD_REQUEST_STATUS, NOT_IN_GROUP);
+                return new ResponseDto<HashSet<ProgressReportDTO>>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = NOT_IN_GROUP };
             }
 
             return await GetProgressReportInGroup(classId, groupId, startDate, endDate);
@@ -314,13 +344,13 @@ namespace Api.Services.Reports
             if (classId == 0 || groupId == 0 || !(await _classRepository.ExistsByIdAsync(classId)) || !(await _groupRepository.ExistsById(groupId)))
             {
                 _logger.LogWarning("{GET_PROGRESS_REPORT}{ServiceMessage.INVALID_ARGUMENT_MESSAGE}");
-                return new ResponseDto<HashSet<ProgressReportDTO>>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                return new ResponseDto<HashSet<ProgressReportDTO>>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
             }
 
             if ((await _groupRepository.IsGroupExistsInClassAsync(groupId, classId)) <= 0)
             {
                 _logger.LogWarning("{GET_PROGRESS_REPORT}Group is not exist in class.");
-                return new ResponseDto<HashSet<ProgressReportDTO>>(ServiceStatusCode.BAD_REQUEST_STATUS, "Group is not exist in class.");
+                return new ResponseDto<HashSet<ProgressReportDTO>>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = "Group is not exist in class." };
             }
 
             HashSet<ProgressReport> progressReportSet;
@@ -342,7 +372,7 @@ namespace Api.Services.Reports
             }).ToHashSet();
 
             _logger.LogInformation("Get progress report from group success");
-            return new ResponseDto<HashSet<ProgressReportDTO>>(ServiceStatusCode.OK_STATUS, ServiceMessage.SUCCESS_MESSAGE, progressReportDtoSet);
+            return new ResponseDto<HashSet<ProgressReportDTO>> { code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE, data = progressReportDtoSet };
         }
 
         public async Task<ResponseDto<CycleReportDTO>> AddCycleReportAsync(CreateCycleReportRequest reportRequest, int leaderId)
@@ -352,32 +382,32 @@ namespace Api.Services.Reports
             if (reportRequest == null || groupId <= 0 || leaderId <= 0 || !await _groupRepository.ExistsById(groupId) || !await _studentRepository.ExistsById(leaderId))
             {
                 _logger.LogWarning("{CREATE_CYCLE_REPORT}{INVALID_ARGUMENT_MESSAGE}", CREATE_CYCLE_REPORT, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
-                return new ResponseDto<CycleReportDTO>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                return new ResponseDto<CycleReportDTO>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
             }
 
             if (await _groupRepository.IsGroupDisableAsync(groupId) == 1)
             {
                 _logger.LogWarning("{CREATE_CYCLE_REPORT}{GROUP_DISABLE}", CREATE_CYCLE_REPORT, GROUP_DISABLE);
-                return new ResponseDto<CycleReportDTO>(ServiceStatusCode.BAD_REQUEST_STATUS, GROUP_DISABLE);
+                return new ResponseDto<CycleReportDTO>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = GROUP_DISABLE };
             }
 
             if (leaderId != await _studentGroupRepository.FindLeaderInGroup(groupId))
             {
                 _logger.LogWarning("{CREATE_CYCLE_REPORT}{NOT_A_LEADER}");
-                return new ResponseDto<CycleReportDTO>(ServiceStatusCode.BAD_REQUEST_STATUS, NOT_A_LEADER);
+                return new ResponseDto<CycleReportDTO>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = NOT_A_LEADER };
             }
 
             int? currentCycle = await GetCurrentCycle(groupId);
             if (currentCycle == null)
             {
                 _logger.LogWarning("{CREATE_CYCLE_REPORT}{NOT_IN_CYCLE}");
-                return new ResponseDto<CycleReportDTO>(ServiceStatusCode.BAD_REQUEST_STATUS, NOT_IN_CYCLE);
+                return new ResponseDto<CycleReportDTO>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = NOT_IN_CYCLE };
             }
 
-            if (await _cycleReportRepository.ExistsByGroupAndCycleNumberAsync(new Group(groupId), currentCycle.Value) == 0)
+            if ((await _cycleReportRepository.ExistsByGroupAndCycleNumberAsync(groupId, currentCycle.Value)) != 0)
             {
                 _logger.LogWarning("{CREATE_CYCLE_REPORT}{CYCLE_REPORT_EXISTS}");
-                return new ResponseDto<CycleReportDTO>(ServiceStatusCode.BAD_REQUEST_STATUS, CYCLE_REPORT_EXISTS);
+                return new ResponseDto<CycleReportDTO>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = CYCLE_REPORT_EXISTS };
             }
 
             CycleReport cycleReport = new CycleReport()
@@ -387,13 +417,12 @@ namespace Api.Services.Reports
                 ResourceLink = reportRequest.ResourceLink,
                 GroupId = groupId
             };
-            cycleReport.Group = new Group(groupId);
             cycleReport.CycleNumber = currentCycle.Value;
 
-            CycleReportDTO responseEntity = MapToCycleReportDTO(await _cycleReportRepository.SaveAsync(cycleReport));
+            CycleReportDTO responseEntity = MapToCycleReportDTO(await _cycleReportRepository.AddAsync(cycleReport));
 
             _logger.LogInformation("Add cycle report success");
-            return new ResponseDto<CycleReportDTO>(ServiceStatusCode.OK_STATUS, ServiceMessage.SUCCESS_MESSAGE, responseEntity);
+            return new ResponseDto<CycleReportDTO> { code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE, data = responseEntity };
         }
 
         public async Task<ResponseDto<CycleReportDTO>> UpdateCycleReport(UpdateCycleReportRequest reportRequest, int leaderId)
@@ -405,35 +434,35 @@ namespace Api.Services.Reports
                 !await _groupRepository.ExistsById(groupId) || !await _studentRepository.ExistsById(leaderId) || !await _cycleReportRepository.ExistsById(reportRequest.Id))
             {
                 _logger.LogWarning("{}{}", UPDATE_CYCLE_REPORT, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
-                return new ResponseDto<CycleReportDTO>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                return new ResponseDto<CycleReportDTO>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
             }
             if (cycleReport.Feedback != null)
             {
                 _logger.LogWarning("{}{}", UPDATE_CYCLE_REPORT, "Feedback is not null");
-                return new ResponseDto<CycleReportDTO>(ServiceStatusCode.BAD_REQUEST_STATUS, "Can not update report having feedback");
+                return new ResponseDto<CycleReportDTO>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = "Can not update report having feedback" };
             }
             if (await _groupRepository.IsGroupDisableAsync(groupId) == 1)
             {
                 _logger.LogWarning("{}{}", UPDATE_CYCLE_REPORT, GROUP_DISABLE);
-                return new ResponseDto<CycleReportDTO>(ServiceStatusCode.BAD_REQUEST_STATUS, GROUP_DISABLE);
+                return new ResponseDto<CycleReportDTO>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = GROUP_DISABLE };
             }
             if (!leaderId.Equals(await _studentGroupRepository.FindLeaderInGroup(groupId)))
             {
                 _logger.LogWarning("{}{}", UPDATE_CYCLE_REPORT, NOT_A_LEADER);
-                return new ResponseDto<CycleReportDTO>(ServiceStatusCode.BAD_REQUEST_STATUS, NOT_A_LEADER);
+                return new ResponseDto<CycleReportDTO>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = NOT_A_LEADER };
             }
             int? currentCycle = await GetCurrentCycle(groupId);
             if (currentCycle == null || !cycleReport.CycleNumber.Equals(currentCycle))
             {
                 _logger.LogWarning("{}{}", UPDATE_CYCLE_REPORT, NOT_IN_CYCLE);
-                return new ResponseDto<CycleReportDTO>(ServiceStatusCode.BAD_REQUEST_STATUS, NOT_IN_CYCLE);
+                return new ResponseDto<CycleReportDTO>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = NOT_IN_CYCLE };
             }
             cycleReport.Content = reportRequest.Content;
             cycleReport.Title = reportRequest.Title;
             cycleReport.ResourceLink = reportRequest.ResourceLink;
-            CycleReportDTO responseEntity = MapToCycleReportDTO(await _cycleReportRepository.SaveAsync(cycleReport));
+            CycleReportDTO responseEntity = MapToCycleReportDTO(await _cycleReportRepository.UpdateAsync(cycleReport));
             _logger.LogInformation("Update cycle report success");
-            return new ResponseDto<CycleReportDTO>(ServiceStatusCode.OK_STATUS, ServiceMessage.SUCCESS_MESSAGE, responseEntity);
+            return new ResponseDto<CycleReportDTO>{ code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE, data = responseEntity };
         }
 
         public async Task<ResponseDto<object>> DeleteCycleReport(int groupId, int reportId, int leaderId)
@@ -444,31 +473,31 @@ namespace Api.Services.Reports
                 || !await _studentRepository.ExistsById(leaderId) || !await _cycleReportRepository.ExistsById(reportId))
             {
                 _logger.LogWarning("{}{}", DELETE_CYCLE_REPORT, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
-                return new ResponseDto<object>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                return new ResponseDto<object>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
             }
             if (await _groupRepository.IsGroupDisableAsync(groupId) == 1)
             {
                 _logger.LogWarning("{}{}", DELETE_CYCLE_REPORT, GROUP_DISABLE);
-                return new ResponseDto<object>(ServiceStatusCode.BAD_REQUEST_STATUS, GROUP_DISABLE);
+                return new ResponseDto<object>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = GROUP_DISABLE };
             }
             if (!leaderId.Equals(_studentGroupRepository.FindLeaderInGroup(groupId)))
             {
                 _logger.LogWarning("{}{}", DELETE_CYCLE_REPORT, NOT_A_LEADER);
-                return new ResponseDto<object>(ServiceStatusCode.BAD_REQUEST_STATUS, NOT_A_LEADER);
+                return new ResponseDto<object>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = NOT_A_LEADER };
             }
             if (await _cycleReportRepository.GetByIdAndGroupIdAsync(groupId, reportId) == null)
             {
                 _logger.LogWarning("{}{}", DELETE_CYCLE_REPORT, REPORT_NOT_IN_GROUP);
-                return new ResponseDto<object>(ServiceStatusCode.BAD_REQUEST_STATUS, REPORT_NOT_IN_GROUP);
+                return new ResponseDto<object>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = REPORT_NOT_IN_GROUP };
             }
             if ((await _cycleReportRepository.GetByIdAsync(reportId)).Feedback != null)
             {
                 _logger.LogWarning("{}{}", DELETE_CYCLE_REPORT, "Feedback is not null");
-                return new ResponseDto<object>(ServiceStatusCode.BAD_REQUEST_STATUS, "Can not delete report having feedback");
+                return new ResponseDto<object>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = "Can not delete report having feedback" };
             }
             _cycleReportRepository.DeleteAsync(new CycleReport(reportId));
             _logger.LogInformation("Delete cycle report success.");
-            return new ResponseDto<object>(ServiceStatusCode.OK_STATUS, ServiceMessage.SUCCESS_MESSAGE);
+            return new ResponseDto<object>{ code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE };
         }
 
         public async Task<ResponseDto<object>> AddProgressReportAsync(CreateProgressReportRequest reportRequest, int studentId)
@@ -478,25 +507,25 @@ namespace Api.Services.Reports
             if (reportRequest == null || groupId <= 0 || studentId <= 0 || !await _groupRepository.ExistsById(groupId) || !await _studentRepository.ExistsById(studentId))
             {
                 _logger.LogWarning("{CREATE_PROGRESS_REPORT}{INVALID_ARGUMENT_MESSAGE}", CREATE_PROGRESS_REPORT, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
-                return new ResponseDto<object>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                return new ResponseDto<object>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
             }
 
             if (await _groupRepository.IsGroupDisableAsync(groupId) == 1)
             {
                 _logger.LogWarning("{CREATE_PROGRESS_REPORT}{GROUP_DISABLE}", CREATE_PROGRESS_REPORT, GROUP_DISABLE);
-                return new ResponseDto<object>(ServiceStatusCode.BAD_REQUEST_STATUS, GROUP_DISABLE);
+                return new ResponseDto<object>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = GROUP_DISABLE };
             }
 
             if (await _studentGroupRepository.IsStudentExistInGroup(groupId, studentId) == 0)
             {
                 _logger.LogWarning("{CREATE_PROGRESS_REPORT}{NOT_IN_GROUP}", CREATE_PROGRESS_REPORT, NOT_IN_GROUP);
-                return new ResponseDto<object>(ServiceStatusCode.BAD_REQUEST_STATUS, NOT_IN_GROUP);
+                return new ResponseDto<object>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = NOT_IN_GROUP };
             }
 
-            if (await _progressReportRepository.ExistsByStudentIdAndGroupIdAndCurDate(studentId, groupId, DateTime.UtcNow.Date) == 0)
+            if (await _progressReportRepository.ExistsByStudentIdAndGroupIdAndCurDate(studentId, groupId, DateTime.UtcNow.Date) != 0)
             {
                 _logger.LogWarning("{CREATE_PROGRESS_REPORT}{PROGRESS_REPORT_EXIST}", CREATE_PROGRESS_REPORT, "Student only allow to send progress report once a day.");
-                return new ResponseDto<object>(ServiceStatusCode.BAD_REQUEST_STATUS, "Student only allow to send progress report once a day.");
+                return new ResponseDto<object>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = "Student only allow to send progress report once a day." };
             }
 
             ProgressReport progressReport = new ProgressReport
@@ -505,13 +534,12 @@ namespace Api.Services.Reports
                 Content = reportRequest.Content,
                 GroupId = reportRequest.GroupId,
                 ReportTime = DateTime.UtcNow.Date,
-                Group = await _groupRepository.FindOneByIdAsync(groupId),
-                Student = await _studentRepository.FindOneById(studentId)
+                StudentId = studentId
             };
 
-            await _progressReportRepository.SaveAsync(progressReport);
+            await _progressReportRepository.AddAsync(progressReport);
             _logger.LogInformation("Add progress report success");
-            return new ResponseDto<object>(ServiceStatusCode.OK_STATUS, ServiceMessage.SUCCESS_MESSAGE);
+            return new ResponseDto<object>{ code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE };
         }
 
         public async Task<ResponseDto<object>> UpdateProgressReportAsync(UpdateProgressReportRequest reportRequest, int studentId)
@@ -521,25 +549,25 @@ namespace Api.Services.Reports
             if (reportRequest == null || groupId <= 0 || studentId <= 0 || !await _groupRepository.ExistsById(groupId) || !await _studentRepository.ExistsById(studentId) || !await _progressReportRepository.ExistsById(reportRequest.Id))
             {
                 _logger.LogWarning("{UPDATE_PROGRESS_REPORT}{INVALID_ARGUMENT_MESSAGE}", UPDATE_PROGRESS_REPORT, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
-                return new ResponseDto<object>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                return new ResponseDto<object>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
             }
 
             if (await _groupRepository.IsGroupDisableAsync(groupId) == 1)
             {
                 _logger.LogWarning("{UPDATE_PROGRESS_REPORT}{GROUP_DISABLE}", UPDATE_PROGRESS_REPORT, GROUP_DISABLE);
-                return new ResponseDto<object>(ServiceStatusCode.BAD_REQUEST_STATUS, GROUP_DISABLE);
+                return new ResponseDto<object>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = GROUP_DISABLE };
             }
 
             if (await _studentGroupRepository.IsStudentExistInGroup(groupId, studentId) <= 0)
             {
                 _logger.LogWarning("{UPDATE_PROGRESS_REPORT}{NOT_IN_GROUP}", UPDATE_PROGRESS_REPORT, NOT_IN_GROUP);
-                return new ResponseDto<object>(ServiceStatusCode.BAD_REQUEST_STATUS, NOT_IN_GROUP);
+                return new ResponseDto<object>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = NOT_IN_GROUP };
             }
 
             if (!CompareDate(DateTime.UtcNow.Date, await _progressReportRepository.GetDateOfProgressReport(reportRequest.Id)))
             {
                 _logger.LogWarning("{UPDATE_PROGRESS_REPORT}{STUDENT_NOT_ALLOW_UPDATE}", UPDATE_PROGRESS_REPORT, "Student not allow to update submitted report.");
-                return new ResponseDto<object>(ServiceStatusCode.BAD_REQUEST_STATUS, "Student not allow to update submitted report.");
+                return new ResponseDto<object>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = "Student not allow to update submitted report." };
             }
 
             ProgressReport progressReport = new ProgressReport
@@ -549,13 +577,12 @@ namespace Api.Services.Reports
                 Content = reportRequest.Content,
                 GroupId = reportRequest.GroupId,
                 ReportTime = DateTime.UtcNow.Date,
-                Group = await _groupRepository.FindOneByIdAsync(groupId),
-                Student = await _studentRepository.FindOneById(studentId)
+                StudentId = studentId
             };
 
-            await _progressReportRepository.SaveAsync(progressReport);
+            await _progressReportRepository.UpdateAsync(progressReport);
             _logger.LogInformation("Update progress report success");
-            return new ResponseDto<object>(ServiceStatusCode.OK_STATUS, ServiceMessage.SUCCESS_MESSAGE);
+            return new ResponseDto<object>{ code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE };
         }
 
         public async Task<ResponseDto<object>> DeleteProgressReportAsync(int groupId, int reportId, int studentId)
@@ -564,30 +591,30 @@ namespace Api.Services.Reports
             if (reportId <= 0 || groupId <= 0 || studentId <= 0 || !await _groupRepository.ExistsById(groupId) || !await _studentRepository.ExistsById(studentId) || !await _progressReportRepository.ExistsById(reportId))
             {
                 _logger.LogWarning("{DELETE_PROGRESS_REPORT}{INVALID_ARGUMENT_MESSAGE}", DELETE_PROGRESS_REPORT, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
-                return new ResponseDto<object>(ServiceStatusCode.BAD_REQUEST_STATUS, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                return new ResponseDto<object>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
             }
 
             if (await _studentGroupRepository.IsStudentExistInGroup(groupId, studentId) >= 0)
             {
                 _logger.LogWarning("{DELETE_PROGRESS_REPORT}{NOT_IN_GROUP}", DELETE_PROGRESS_REPORT, NOT_IN_GROUP);
-                return new ResponseDto<object>(ServiceStatusCode.BAD_REQUEST_STATUS, NOT_IN_GROUP);
+                return new ResponseDto<object>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = NOT_IN_GROUP };
             }
 
             if (await _groupRepository.IsGroupDisableAsync(groupId) == 1)
             {
                 _logger.LogWarning("{DELETE_PROGRESS_REPORT}{GROUP_DISABLE}", DELETE_PROGRESS_REPORT, GROUP_DISABLE);
-                return new ResponseDto<object>(ServiceStatusCode.BAD_REQUEST_STATUS, GROUP_DISABLE);
+                return new ResponseDto<object>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = GROUP_DISABLE };
             }
 
             if (!CompareDate(DateTime.UtcNow.Date, await _progressReportRepository.GetDateOfProgressReport(reportId)))
             {
                 _logger.LogWarning("{DELETE_PROGRESS_REPORT}{STUDENT_NOT_ALLOW_DELETE}", DELETE_PROGRESS_REPORT, "Student not allow to delete submitted report.");
-                return new ResponseDto<object>(ServiceStatusCode.BAD_REQUEST_STATUS, "Student not allow to delete submitted report.");
+                return new ResponseDto<object>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = "Student not allow to delete submitted report." };
             }
 
             await _progressReportRepository.DeleteAsync(reportId);
             _logger.LogInformation("Delete progress report success.");
-            return new ResponseDto<object>(ServiceStatusCode.OK_STATUS, ServiceMessage.SUCCESS_MESSAGE);
+            return new ResponseDto<object>{ code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE };
         }
 
         public bool CompareDate(DateTime date1, DateTime date2)
@@ -609,6 +636,41 @@ namespace Api.Services.Reports
             int totalDays = timeSpan.Days;
             int currentCycle = (totalDays / cycleDuration) + 1;
             return currentCycle;
+        }
+
+        public async Task<ResponseDto<CycleReportDTO>> FeedbackCycleReportAsync(FeedbackCycleReportRequest feedbackCycleReportRequest, string userEmail)
+        {
+            _logger.LogInformation($"{FEEDBACK_CYCLE_REPORT}{feedbackCycleReportRequest}");
+            int? lecturerId = await _lecturerRepository.FindLecturerIdByEmailAsync(userEmail);
+            if (lecturerId == null ||
+                    !await _groupRepository.ExistsById(feedbackCycleReportRequest.GroupId) || !await _cycleReportRepository.ExistsById(feedbackCycleReportRequest.ReportId))
+            {
+                _logger.LogWarning($"{FEEDBACK_CYCLE_REPORT}{ServiceMessage.INVALID_ARGUMENT_MESSAGE}");
+                return new ResponseDto<CycleReportDTO> { code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
+            }
+            if ((await _groupRepository.IsGroupDisableAsync(feedbackCycleReportRequest.GroupId)) == 1)
+            {
+                _logger.LogWarning($"{FEEDBACK_CYCLE_REPORT}{GROUP_DISABLE}");
+                return new ResponseDto<CycleReportDTO> { code = ServiceStatusCode.BAD_REQUEST_STATUS, message = GROUP_DISABLE};
+            }
+            if (!lecturerId.Equals((await _groupRepository.FindOneByIdAsync(feedbackCycleReportRequest.GroupId)).Class.LecturerId))
+            {
+                _logger.LogWarning($"{FEEDBACK_CYCLE_REPORT}{LECTURER_NOT_MANAGE}");
+                return new ResponseDto<CycleReportDTO> { code = ServiceStatusCode.BAD_REQUEST_STATUS, message = LECTURER_NOT_MANAGE};
+            }
+            if ((await _cycleReportRepository.ExistsByIdAndGroupIdAsync(feedbackCycleReportRequest.GroupId, feedbackCycleReportRequest.ReportId)) == 0)
+            {
+                _logger.LogWarning($"{FEEDBACK_CYCLE_REPORT}{REPORT_NOT_IN_GROUP}");
+                return new ResponseDto<CycleReportDTO> { code = ServiceStatusCode.BAD_REQUEST_STATUS, message = REPORT_NOT_IN_GROUP};
+            }
+            await _cycleReportRepository.AddFeedbackAsync(feedbackCycleReportRequest.ReportId, feedbackCycleReportRequest.Feedback , feedbackCycleReportRequest.Mark.Value);
+            _logger.LogInformation("Feedback cycle report successful.");
+            return new ResponseDto<CycleReportDTO>
+            {
+                code = ServiceStatusCode.OK_STATUS,
+                message = ServiceMessage.SUCCESS_MESSAGE,
+                data = MapToCycleReportDTO(await _cycleReportRepository.GetByIdAsync(feedbackCycleReportRequest.ReportId))
+            };
         }
     }
 }

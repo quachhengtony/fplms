@@ -13,12 +13,13 @@ namespace Repositories.Interfaces
 
         public Task<int> ExistsByIdAndGroupIdAsync(int groupId, int reportId);
 
-        public Task<int> ExistsByGroupAndCycleNumberAsync(Group group, int cycleNumber);
+        public Task<int> ExistsByGroupAndCycleNumberAsync(int groupId, int cycleNumber);
 
         public Task<int> AddFeedbackAsync(int reportId, string feedback, float mark);
         Task<bool> ExistsById(int reportId);
         Task<CycleReport> GetByIdAsync(int reportId);
-        Task<CycleReport> SaveAsync(CycleReport cycleReport);
+        Task<CycleReport> AddAsync(CycleReport cycleReport);
+        Task<CycleReport> UpdateAsync(CycleReport cycleReport);
         Task<CycleReport> GetByIdAndGroupIdAsync(int groupId, int reportId);
         Task DeleteAsync(CycleReport cycleReport);
     }

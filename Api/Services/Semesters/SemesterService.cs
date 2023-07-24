@@ -7,6 +7,7 @@ using Api.Services.Constant;
 using BusinessObjects.Models;
 using FPLMS.Api.Dto;
 using Microsoft.Extensions.Logging;
+using Repositories;
 using Repositories.Interfaces;
 
 namespace Api.Services.Semesters
@@ -17,10 +18,7 @@ namespace Api.Services.Semesters
         private readonly IClassRepository _classRepository;
         private readonly ILogger<SemesterService> _logger;
         private const string SEMESTER_HAS_ASSOCIATED_CLASSES_MESSAGE = "Semester still has class";
-        public SemesterService(
-            ISemesterRepository semesterRepository,
-            IClassRepository classRepository,
-            ILogger<SemesterService> logger)
+        public SemesterService(ILogger<SemesterService> logger, ISemesterRepository semesterRepository, IClassRepository classRepository)
         {
             _semesterRepository = semesterRepository;
             _classRepository = classRepository;
@@ -63,7 +61,7 @@ namespace Api.Services.Semesters
             }
 
             var semester = MapToSemesterEntity(semesterDto);
-            await _semesterRepository.SaveAsync(semester);
+            await _semesterRepository.AddAsync(semester);
 
             _logger.LogInformation("Create semester success");
 
@@ -98,7 +96,7 @@ namespace Api.Services.Semesters
             }
 
             var semester = MapToSemesterEntity(semesterDto);
-            await _semesterRepository.SaveAsync(semester);
+            await _semesterRepository.UpdateAsync(semester);
 
             _logger.LogInformation("Update semester success");
 

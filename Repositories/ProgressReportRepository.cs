@@ -12,24 +12,11 @@ namespace Repositories
 {
     public class ProgressReportRepository : IProgressReportRepository
     {
-        private static ProgressReportRepository? instance;
-        private static readonly object instanceLock = new object();
-        private static FplmsManagementContext? dbContext;
+        private FplmsManagementContext dbContext;
 
-        public static ProgressReportRepository Instance
+        public ProgressReportRepository()
         {
-            get
-            {
-                lock (instanceLock)
-                {
-                    if (instance == null)
-                    {
-                        dbContext = new FplmsManagementContext();
-                        instance = new ProgressReportRepository();
-                    }
-                    return instance;
-                }
-            }
+            dbContext = new FplmsManagementContext();
         }
         public async Task<HashSet<ProgressReport>> FindByGroup(Group group)
         {
@@ -51,7 +38,7 @@ namespace Repositories
         public async Task<int> ExistsByStudentIdAndGroupIdAndCurDate(int studentId, int groupId, DateTime curDate)
         {
             return await dbContext.ProgressReports
-                .Where(pr => pr.StudentId == studentId && pr.GroupId == groupId && pr.ReportTime == curDate)
+                .Where(pr => pr.StudentId == studentId && pr.GroupId == groupId && pr.ReportTime.Date == curDate)
                 .Select(pr => pr.Id)
                 .FirstOrDefaultAsync();
         }
@@ -82,7 +69,12 @@ namespace Repositories
             return await dbContext.ProgressReports.FindAsync(reportId);
         }
 
-        public async Task SaveAsync(ProgressReport progressReport)
+        public async Task AddAsync(ProgressReport progressReport)
+        {
+            dbContext.ProgressReports.Add(progressReport);
+            await dbContext.SaveChangesAsync();
+        }
+        public async Task UpdateAsync(ProgressReport progressReport)
         {
             dbContext.ProgressReports.Add(progressReport);
             await dbContext.SaveChangesAsync();

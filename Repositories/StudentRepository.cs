@@ -13,24 +13,11 @@ namespace Repositories
 {
     public class StudentRepository : IStudentRepository
     {
-        private static StudentRepository? instance;
-        private static readonly object instanceLock = new object();
-        private static FplmsManagementContext? dbContext;
+        private FplmsManagementContext dbContext;
 
-        public static StudentRepository Instance
+        public StudentRepository()
         {
-            get
-            {
-                lock (instanceLock)
-                {
-                    if (instance == null)
-                    {
-                        dbContext = new FplmsManagementContext();
-                        instance = new StudentRepository();
-                    }
-                    return instance;
-                }
-            }
+            dbContext = new FplmsManagementContext();
         }
 
         public async Task<Group> FindGroupByStudentIdAndClassId(int studentId, int classId)

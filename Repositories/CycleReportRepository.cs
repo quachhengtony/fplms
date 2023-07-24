@@ -7,39 +7,32 @@ using Microsoft.EntityFrameworkCore;
 using BusinessObjects.Models;
 using BusinessObjects.DbContexts;
 using Repositories.Interfaces;
+using MySql.Data.MySqlClient;
 
 namespace Repositories
 {
     public class CycleReportRepository : ICycleReportRepository
     {
-        private static CycleReportRepository instance;
-        private static readonly object instanceLock = new object();
-        private static FplmsManagementContext dbContext;
 
-        public static CycleReportRepository Instance
+
+        private FplmsManagementContext dbContext;
+
+        public CycleReportRepository()
         {
-            get
-            {
-                lock (instanceLock)
-                {
-                    if (instance == null)
-                    {
-                        dbContext = new FplmsManagementContext();
-                        instance = new CycleReportRepository();
-                    }
-                    return instance;
-                }
-            }
+            dbContext = new FplmsManagementContext();
         }
 
         public Task<int> AddFeedbackAsync(int reportId, string feedback, float mark)
         {
-            return dbContext.Database.ExecuteSqlRawAsync($"update cycle_report set feedback = '{feedback}', mark = {mark} where id = {reportId}");
+            return dbContext.Database.ExecuteSqlRawAsync("UPDATE cycle_report SET feedback = @feedback, mark = @mark WHERE id = @reportId",
+        new MySqlParameter("@feedback", feedback),
+        new MySqlParameter("@mark", mark),
+        new MySqlParameter("@reportId", reportId));
         }
 
-        public Task<int> ExistsByGroupAndCycleNumberAsync(Group group, int cycleNumber)
+        public Task<int> ExistsByGroupAndCycleNumberAsync(int groupId, int cycleNumber)
         {
-            return dbContext.CycleReports.Where(c => c.GroupId == group.Id && c.CycleNumber == cycleNumber)
+            return dbContext.CycleReports.Where(c => c.GroupId == groupId && c.CycleNumber == cycleNumber)
                 .Select(c => c.Id)
                 .FirstOrDefaultAsync();
         }
@@ -67,9 +60,15 @@ namespace Repositories
             return await dbContext.CycleReports.FindAsync(reportId);
         }
 
-        public async Task<CycleReport> SaveAsync(CycleReport cycleReport)
+        public async Task<CycleReport> AddAsync(CycleReport cycleReport)
         {
             dbContext.CycleReports.Add(cycleReport);
+            await dbContext.SaveChangesAsync();
+            return cycleReport;
+        }
+        public async Task<CycleReport> UpdateAsync(CycleReport cycleReport)
+        {
+            dbContext.CycleReports.Update(cycleReport);
             await dbContext.SaveChangesAsync();
             return cycleReport;
         }

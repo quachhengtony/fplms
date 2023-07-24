@@ -26,7 +26,7 @@ public class StudentController : ControllerBase
 		_logger = logger;
 	}
 
-	[HttpGet("{studentId}")]
+	[HttpGet("{studentId}"), Authorize(Roles = "Student")]
 	public Task<ResponseDto<StudentDto>> GetStudentById(int studentId)
 	{
 		return _studentService.GetStudentById(studentId);

@@ -12,24 +12,11 @@ namespace Repositories
 {
     public class GroupRepository : IGroupRepository
     {
-        private static GroupRepository instance;
-        private static readonly object instanceLock = new object();
-        private static FplmsManagementContext dbContext;
+        private FplmsManagementContext dbContext;
 
-        public static GroupRepository Instance
+        public GroupRepository()
         {
-            get
-            {
-                lock (instanceLock)
-                {
-                    if (instance == null)
-                    {
-                        dbContext = new FplmsManagementContext();
-                        instance = new GroupRepository();
-                    }
-                    return instance;
-                }
-            }
+            dbContext = new FplmsManagementContext();
         }
 
         public Task<int> ExistByProjectAsync(int projectId)
@@ -64,7 +51,7 @@ namespace Repositories
         public Task<Group> FindOneByIdAsync(int groupId)
         {
             return dbContext.Groups.Where(g => g.Id == groupId && g.IsDisable == 0)
-                .Include(g => g.Class)
+                .Include(g => g.Class).ThenInclude(cl => cl.SemesterCodeNavigation)
                 .Include(g => g.Project)
                 .Include(g => g.Meetings)
                 .Include(g => g.CycleReports)
@@ -110,12 +97,17 @@ namespace Repositories
 
         public Task<int> SetGroupDisableAsync(int groupId)
         {
-            return dbContext.Database.ExecuteSqlRawAsync($"update `group` set is_disable = 1 where id = {groupId}");
+            dbContext.Database.ExecuteSqlRawAsync($"update `group` set is_disable = 1 where id = {groupId}");
+            dbContext.SaveChanges();
+            return Task.FromResult(1);
         }
 
         public Task<int> SetGroupEnableAsync(int groupId)
         {
-            return dbContext.Database.ExecuteSqlRawAsync($"update `group` set is_disable = 0 where id = {groupId}");
+            dbContext.Database.ExecuteSqlRawAsync($"update `group` set is_disable = 0 where id = {groupId}");
+            dbContext.SaveChanges();
+            return Task.FromResult(1);
+
         }
 
         public Task<int> UpdateProjectInGroupAsync(int groupId, int projectId)
@@ -144,9 +136,9 @@ namespace Repositories
             return;
         }
 
-        public Task<bool> ExistsById(int groupId)
+        public async Task<bool> ExistsById(int groupId)
         {
-            throw new NotImplementedException();
+            return await dbContext.Groups.AnyAsync(g => g.Id == groupId);
         }
     }
 }

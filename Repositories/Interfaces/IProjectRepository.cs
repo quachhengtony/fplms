@@ -16,6 +16,7 @@ namespace Repositories.Interfaces
         Task<HashSet<Project>> FindByLecturerIdAndSemester(int lecturerId, string semesterCode);
         Task<HashSet<Project>> FindByLecturerId(int lecturerId);
         Task DeleteProject(int projectId);
-        Task<int> SaveAsync(Project project);
+        Task<int> AddAsync(Project project);
+        Task<int> UpdateAsync(Project project);
     }
 }

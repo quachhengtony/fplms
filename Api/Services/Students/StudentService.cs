@@ -13,9 +13,9 @@ namespace Api.Services.Students
         private readonly IStudentRepository _studentRepo;
         private readonly ILogger<StudentService> _logger;
 
-        public StudentService(ILogger<StudentService> logger)
+        public StudentService(ILogger<StudentService> logger, IStudentRepository studentRepository)
         {
-            _studentRepo = StudentRepository.Instance;
+            _studentRepo = studentRepository;
             _logger = logger;
         }
 

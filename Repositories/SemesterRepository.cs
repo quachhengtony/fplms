@@ -12,29 +12,16 @@ namespace Repositories
 {
     public class SemesterRepository : ISemesterRepository
     {
-        private static SemesterRepository? instance;
-        private static readonly object instanceLock = new object();
-        private static FplmsManagementContext? dbContext;
+        private FplmsManagementContext dbContext;
 
-        public static SemesterRepository Instance
+        public SemesterRepository()
         {
-            get
-            {
-                lock (instanceLock)
-                {
-                    if (instance == null)
-                    {
-                        dbContext = new FplmsManagementContext();
-                        instance = new SemesterRepository();
-                    }
-                    return instance;
-                }
-            }
+            dbContext = new FplmsManagementContext();
         }
 
         public async Task<HashSet<Semester>> GetSemester(string code)
         {
-            var semesters = await dbContext.Semesters.FromSqlRaw("SELECT * FROM SEMESTER WHERE code LIKE {0}", code).ToListAsync();
+            var semesters = await dbContext.Semesters.FromSqlRaw("SELECT * FROM semester WHERE code LIKE {0}", code).ToListAsync();
             return semesters.ToHashSet();
         }
 
@@ -48,7 +35,13 @@ namespace Repositories
             return (DateTime)await dbContext.Semesters.Where(s => s.Code == code).Select(s => s.StartDate).FirstOrDefaultAsync();
         }
 
-        public async Task SaveAsync(Semester semester)
+        public async Task AddAsync(Semester semester)
+        {
+            dbContext.Semesters.Add(semester);
+            await dbContext.SaveChangesAsync();
+        }
+
+        public async Task UpdateAsync(Semester semester)
         {
             dbContext.Semesters.Add(semester);
             await dbContext.SaveChangesAsync();

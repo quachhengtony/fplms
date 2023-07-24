@@ -21,7 +21,9 @@ namespace Repositories.Interfaces
         Task<DateTime> GetDateOfProgressReport(int reportId);
         Task<bool> ExistsById(int reportId);
         Task<ProgressReport> GetByIdAsync(int reportId);
-        Task SaveAsync(ProgressReport progressReport);
+        Task AddAsync(ProgressReport progressReport);
+        Task UpdateAsync(ProgressReport progressReport);
+
         Task DeleteAsync(int reportId);
     }
 }

@@ -26,34 +26,34 @@ public class SubjectController : ControllerBase
         _logger = logger;
     }
 
-	[HttpGet]
+	[HttpGet, Authorize(Roles = "Lecturer, Student")]
 	public Task<ResponseDto<HashSet<SubjectDto>>> GetSubjects()
 	{
 		return _subjectService.GetSubjects();
 	}
 
 	
-	[HttpPost]
+	[HttpPost, Authorize(Roles = "Lecturer")]
 	public Task<ResponseDto<object>> CreateSubject([FromBody] SubjectDto subjectDto)
 	{
 		return _subjectService.CreateSubject(subjectDto);
 	}
 
-	[HttpPut]
+	[HttpPut, Authorize(Roles = "Lecturer")]
 	public Task<ResponseDto<object>> UpdateSubject([FromBody] SubjectDto subjectDto)
 	{
 		return _subjectService.UpdateSubject(subjectDto);
 	}
 	
-	[HttpDelete("{subjectId}")]
+	[HttpDelete("{subjectId}"), Authorize(Roles = "Lecturer")]
 	public Task<ResponseDto<object>> DeleteSubject(int subjectId)
 	{
 		return _subjectService.DeleteSubject(subjectId);
 	}
 
-	[HttpGet("isStudied")]
-	public IActionResult IsStudentStudySubject([FromQuery] string subjectName,
-			[FromQuery] string userEmail) {
+	[HttpGet("isStudied"), Authorize(Roles = "Student")]
+	public IActionResult IsStudentStudySubject([FromQuery] string subjectName) {
+		string userEmail = (string)HttpContext.Items["userEmail"]!;
 		int status = _subjectService.IsStudentStudySubject(userEmail, subjectName).Result;
 
 		return StatusCode(status);
