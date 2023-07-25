@@ -182,7 +182,7 @@ namespace Api.Services.Groups
             if (createGroupRequest.EnrollTime <= System.DateTime.Now)
             {
                 _logger.LogWarning("Create group : {}", ServiceMessage.INVALID_ARGUMENT_MESSAGE);
-                return Task.FromResult(new ResponseDto<object> { code = ServiceStatusCode.BAD_REQUEST_STATUS, message = REMOVE_STUDENT_FROM_GROUP_MESSAGE });
+                return Task.FromResult(new ResponseDto<object> { code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ENROLL_TIME_BEFORE_NOW_MESSAGE });
             }
 
             //create group with amount quantity
