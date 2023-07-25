@@ -140,13 +140,12 @@ namespace Repositories
         {
             return await dbContext.Groups.AnyAsync(g => g.Id == groupId);
         }
-        public async Task<Group> GetGroupIdByNumberAndClassIdAsync(int number, int classId)
+        public Task<Group> GetGroupIdByNumberAndClassIdAsync(int number, int classId)
         {
-            Group group = await dbContext.Groups
+            return dbContext.Groups
                 .Where(g => g.Number == number && g.ClassId == classId && g.IsDisable == 0)
                 .FirstOrDefaultAsync();
 
-            return group;
         }
     }
 }

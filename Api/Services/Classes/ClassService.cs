@@ -76,10 +76,10 @@ namespace Api.Services.Classes
             _logger.LogInformation("Change student group: {}", ServiceMessage.SUCCESS_MESSAGE);
             return Task.FromResult(new ResponseDto<object> { code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE });
         }
-        public async void ChangeGroupLeaderToRandomMember(int currentLeaderId)
+        public void ChangeGroupLeaderToRandomMember(int currentLeaderId)
         {
             // Find the groupId associated with the current leader
-            int groupId = await _studentGroupRepo.FindGroupIdByLeader(currentLeaderId);
+            int groupId = _studentGroupRepo.FindGroupIdByLeader(currentLeaderId).Result;
 
             if (groupId == 0)
             {
@@ -88,8 +88,8 @@ namespace Api.Services.Classes
             }
 
             // Check if there is any other member in the group to become the new leader
-            int newLeaderId = await _studentGroupRepo.ChooseRandomGroupMember(groupId);
-            await _studentGroupRepo.UpdateGroupLeader(groupId, currentLeaderId, isLeader: 0);
+            int newLeaderId = _studentGroupRepo.ChooseRandomGroupMember(groupId).Result;
+            _studentGroupRepo.UpdateGroupLeader(groupId, currentLeaderId, isLeader: 0);
 
             if (newLeaderId == 0)
             {
@@ -100,7 +100,7 @@ namespace Api.Services.Classes
             // Change the current leader to a regular group member
 
             // Assign the new leader
-            await _studentGroupRepo.UpdateGroupLeader(groupId, newLeaderId, isLeader: 1);
+            _studentGroupRepo.UpdateGroupLeader(groupId, newLeaderId, isLeader: 1);
 
             Console.WriteLine("Group leader has been changed successfully.");
         }
