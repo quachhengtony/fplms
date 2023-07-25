@@ -57,7 +57,7 @@ namespace Api.Services.Classes
                 _logger.LogWarning("Change student group: {}", ServiceMessage.ID_NOT_EXIST_MESSAGE);
                 return Task.FromResult(new ResponseDto<object> { code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.ID_NOT_EXIST_MESSAGE });
             }
-            var group = _groupRepo.GetGroupIdByNumberAndClassIdAsync(groupNumber, classId);
+            var group = _groupRepo.GetGroupIdByNumberAndClassIdAsync(groupNumber, classId).Result;
             if (_groupRepo.GetGroupLimitNumberAsync(group.Id).Result <= _studentGroupRepo.GetCurrentNumberOfMemberInGroup(group.Id).Result)
             {
                 _logger.LogWarning("Add student to group: {}", "Group is full");
