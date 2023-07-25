@@ -47,7 +47,7 @@ namespace Api.Services.Classes
         {
             _logger.LogInformation("Change student group: {}, {}", classId, studentId);
             //check if the class not of the lecturer
-            /*if (_classRepo.FindLecturerEmailOfClassAsync(classId).Result != lecturerEmail)
+            if (_classRepo.FindLecturerEmailOfClassAsync(classId).Result != lecturerEmail)
             {
                 _logger.LogWarning("Change student group: {}", ServiceMessage.FORBIDDEN_MESSAGE);
                 return new ResponseDto<object> { code = ServiceStatusCode.FORBIDDEN_STATUS, message = ServiceMessage.FORBIDDEN_MESSAGE };
@@ -56,7 +56,7 @@ namespace Api.Services.Classes
             {
                 _logger.LogWarning("Change student group: {}", ServiceMessage.ID_NOT_EXIST_MESSAGE);
                 return new ResponseDto<object> { code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.ID_NOT_EXIST_MESSAGE };
-            }*/
+            }
             var group = await _groupRepo.GetGroupIdByNumberAndClassIdAsync(groupNumber, classId);
             if (await _groupRepo.GetGroupLimitNumberAsync(group.Id) <= await _studentGroupRepo.GetCurrentNumberOfMemberInGroup(group.Id))
             {
@@ -70,16 +70,16 @@ namespace Api.Services.Classes
             }
             if(_studentGroupRepo.FindStudentLeaderRoleInClass(studentId,classId).Result == 1)
             {
-                await ChangeGroupLeaderToRandomMember(studentId);
+                await ChangeGroupLeaderToRandomMember(studentId, classId);
             }
             await _studentGroupRepo.UpdateStudentGroup(studentId, classId, groupNumber);
             _logger.LogInformation("Change student group: {}", ServiceMessage.SUCCESS_MESSAGE);
             return new ResponseDto<object> { code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE };
         }
-        public async Task ChangeGroupLeaderToRandomMember(int currentLeaderId)
+        public async Task ChangeGroupLeaderToRandomMember(int currentLeaderId, int classId)
         {
             // Find the groupId associated with the current leader
-            int groupId = await _studentGroupRepo.FindGroupIdByLeader(currentLeaderId);
+            int groupId = await _studentGroupRepo.FindGroupIdByLeader(currentLeaderId,classId);
 
             if (groupId == 0)
             {
