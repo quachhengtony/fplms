@@ -25,6 +25,7 @@ namespace Api.Services.Groups
 
         private const string GROUP_DISABLE = "Group is disable";
         private const string REMOVE_STUDENT_FROM_GROUP_MESSAGE = "Remove student from group: ";
+        private const string ENROLL_TIME_BEFORE_NOW_MESSAGE = "Enroll time must after current time ";
 
         public GroupService(ILogger<GroupService> logger, IClassRepository classRepo, IStudentRepository studentRepo,
     IStudentGroupRepository studentGroupRepo, IGroupRepository groupRepo, IProjectRepository projectRepo)
@@ -177,6 +178,11 @@ namespace Api.Services.Groups
                 _logger.LogWarning("Create group : {}", ServiceMessage.INVALID_ARGUMENT_MESSAGE);
                 return Task.FromResult(new ResponseDto<object> { code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE });
 
+            }
+            if (createGroupRequest.EnrollTime <= System.DateTime.Now)
+            {
+                _logger.LogWarning("Create group : {}", ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                return Task.FromResult(new ResponseDto<object> { code = ServiceStatusCode.BAD_REQUEST_STATUS, message = REMOVE_STUDENT_FROM_GROUP_MESSAGE });
             }
 
             //create group with amount quantity

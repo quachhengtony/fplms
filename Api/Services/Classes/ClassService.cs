@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Api.Dto.Response;
 using Api.Dto.Shared;
@@ -56,9 +57,52 @@ namespace Api.Services.Classes
                 _logger.LogWarning("Change student group: {}", ServiceMessage.ID_NOT_EXIST_MESSAGE);
                 return Task.FromResult(new ResponseDto<object> { code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.ID_NOT_EXIST_MESSAGE });
             }
+            var group = _groupRepo.GetGroupIdByNumberAndClassIdAsync(groupNumber, classId);
+            if (_groupRepo.GetGroupLimitNumberAsync(group.Id).Result <= _studentGroupRepo.GetCurrentNumberOfMemberInGroup(group.Id).Result)
+            {
+                _logger.LogWarning("Add student to group: {}", "Group is full");
+                return Task.FromResult(new ResponseDto<object> { code = ServiceStatusCode.BAD_REQUEST_STATUS, message = "Group is full" });
+            }
+            if (_groupRepo.IsEnrollTimeOverAsync(group.Id, System.DateTime.Now).Result == 0)
+            {
+                _logger.LogWarning("Add student to group: {}", "Enroll time is over");
+                return Task.FromResult(new ResponseDto<object> { code = ServiceStatusCode.BAD_REQUEST_STATUS, message = "Enroll time is over" });
+            }
+            if(_studentGroupRepo.FindStudentLeaderRoleInClass(studentId,classId).Result == 1)
+            {
+                ChangeGroupLeaderToRandomMember(studentId);
+            }
             _studentGroupRepo.UpdateStudentGroup(studentId, classId, groupNumber);
             _logger.LogInformation("Change student group: {}", ServiceMessage.SUCCESS_MESSAGE);
             return Task.FromResult(new ResponseDto<object> { code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE });
+        }
+        public async void ChangeGroupLeaderToRandomMember(int currentLeaderId)
+        {
+            // Find the groupId associated with the current leader
+            int groupId = await _studentGroupRepo.FindGroupIdByLeader(currentLeaderId);
+
+            if (groupId == 0)
+            {
+                Console.WriteLine("The current leader is not associated with any group.");
+                return;
+            }
+
+            // Check if there is any other member in the group to become the new leader
+            int newLeaderId = await _studentGroupRepo.ChooseRandomGroupMember(groupId);
+            await _studentGroupRepo.UpdateGroupLeader(groupId, currentLeaderId, isLeader: 0);
+
+            if (newLeaderId == 0)
+            {
+                Console.WriteLine("There are no other members in the group to become the leader.");
+                return;
+            }
+
+            // Change the current leader to a regular group member
+
+            // Assign the new leader
+            await _studentGroupRepo.UpdateGroupLeader(groupId, newLeaderId, isLeader: 1);
+
+            Console.WriteLine("Group leader has been changed successfully.");
         }
 
         public Task<ResponseDto<int>> CreateClassByLecturer(ClassDto classDto, string lecturerEmail)
