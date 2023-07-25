@@ -21,6 +21,9 @@ namespace Api.Services.Groups
         private readonly IStudentGroupRepository _studentGroupRepo;
         private readonly IGroupRepository _groupRepo;
         private readonly IProjectRepository _projectRepo;
+        private readonly IMeetingRepository _meetingRepo;
+        private readonly ICycleReportRepository _cycleReportRepo;
+        private readonly IProgressReportRepository _progressReportRepo;
         private readonly ILogger<GroupService> _logger;
 
         private const string GROUP_DISABLE = "Group is disable";
@@ -226,9 +229,31 @@ namespace Api.Services.Groups
             }
             else
             {
-                _studentGroupRepo.DeleteAllStudentInGroup(groupId);
+                // Retrieve the group and related reports and meetings
                 var group = _groupRepo.FindOneByIdAsync(groupId).Result;
+                var progressReports = group.ProgressReports.ToList();
+                var cycleReports = group.CycleReports.ToList();
+                var meetings = group.Meetings.ToList();
+                foreach (var report in cycleReports)
+                {
+                    _cycleReportRepo.DeleteAsync(report);
+                }
+
+                // Delete related progress reports
+                foreach (var report in progressReports)
+                {
+                    _progressReportRepo.DeleteAsync(report.Id);
+                }
+
+                // Delete related meetings
+                foreach (var meeting in meetings)
+                {
+                    _meetingRepo.DeleteByIdAsync(meeting.Id);
+                }
+
+                // Finally, delete the group
                 _groupRepo.Delete(group);
+
                 _logger.LogInformation("Delete group success");
                 return Task.FromResult(new ResponseDto<object> { code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE });
             }
