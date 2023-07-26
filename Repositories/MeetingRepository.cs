@@ -47,7 +47,7 @@ namespace Repositories
 
         public Task<Meeting> FindOneByIdAsync(int meetingId)
         {
-            return dbContext.Meetings.Where(m => m.Id == meetingId).FirstOrDefaultAsync();
+            return dbContext.Meetings.Where(m => m.Id == meetingId).Include(m => m.Lecturer).FirstOrDefaultAsync();
         }
 
         public async Task<bool> ExistsById(int meetingId)
@@ -64,7 +64,7 @@ namespace Repositories
         }
         public async Task<int> UpdateAsync(Meeting meeting)
         {
-            dbContext.Meetings.Add(meeting);
+            dbContext.Meetings.Update(meeting);
             await dbContext.SaveChangesAsync();
             return meeting.Id;
         }

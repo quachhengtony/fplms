@@ -21,7 +21,7 @@ public class AuthController : ControllerBase
     private readonly IConfiguration _config;
     private readonly IAuthService _authService;
     private readonly ILogger<AuthController> _logger;
-    private string adminEmail = "";
+    private string adminEmail = "huongntc2.fe@gmail.com";
 
     public AuthController(IConfiguration config, IAuthService authService, ILogger<AuthController> logger)
     {

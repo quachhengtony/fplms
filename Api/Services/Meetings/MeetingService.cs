@@ -248,12 +248,13 @@ namespace Api.Services.Meetings
         {
             _logger.LogInformation("{0}{1}", UPDATE_MEETING_MESSAGE, meetingDto);
             var meeting = await _meetingRepository.FindOneByIdAsync(meetingDto.Id);
-            if (!meetingDto.LecturerId.Equals(meeting.Lecturer.Id))
+            var lecturerId = await _lecturerRepository.FindLecturerIdByEmailAsync(userEmail);
+            if (!lecturerId.Equals(meeting.Lecturer.Id))
             {
                 _logger.LogWarning("{0}{1}", SCHEDULING_MEETING_MESSAGE, ServiceMessage.FORBIDDEN_MESSAGE);
                 return new ResponseDto<object>{ code = ServiceStatusCode.FORBIDDEN_STATUS, message = ServiceMessage.FORBIDDEN_MESSAGE };
             }
-            if (string.IsNullOrEmpty(meetingDto.Title) || meetingDto.ScheduleTime == null || string.IsNullOrEmpty(meetingDto.Link) || !meetingDto.GroupId.Equals(meeting.Group.Id))
+            if (string.IsNullOrEmpty(meetingDto.Title) || meetingDto.ScheduleTime == null || string.IsNullOrEmpty(meetingDto.Link) || !meetingDto.GroupId.Equals(meeting.GroupId))
             {
                 _logger.LogWarning("{0}{1}", SCHEDULING_MEETING_MESSAGE, ServiceMessage.INVALID_ARGUMENT_MESSAGE);
                 return new ResponseDto<object>{ code = ServiceStatusCode.UNAUTHENTICATED_STATUS, message = ServiceMessage.INVALID_ARGUMENT_MESSAGE };
@@ -262,7 +263,7 @@ namespace Api.Services.Meetings
             meeting.Link = meetingDto.Link;
             meeting.ScheduleTime = meetingDto.ScheduleTime;
             meeting.Title = meetingDto.Title;
-            meeting.LecturerId = await _lecturerRepository.FindLecturerIdByEmailAsync(userEmail);
+            meeting.LecturerId = lecturerId;
             await _meetingRepository.UpdateAsync(meeting);
             _logger.LogInformation("{0}{1}", UPDATE_MEETING_MESSAGE, ServiceMessage.SUCCESS_MESSAGE);
             return new ResponseDto<object>{ code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE };
