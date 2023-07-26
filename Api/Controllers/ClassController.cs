@@ -85,7 +85,7 @@ public class ClassController : ControllerBase
     [HttpPut("{classId}/students/{studentId}/groups/{groupNumber}"), Authorize(Roles = "Lecturer")]
     public Task<ResponseDto<object>> ChangeStudentGroupByLecturer(int classId, int studentId, int groupNumber) {
         string userEmail = (string)HttpContext.Items["userEmail"]!;
-        return _classService.ChangeStudentGroupByLecturer(studentId, classId, groupNumber, userEmail);
+        return _classService.ChangeStudentGroupByLecturer(classId, studentId, groupNumber, userEmail);
     }
 
     [HttpPost("{classId}/enroll"), Authorize(Roles = "Student")]

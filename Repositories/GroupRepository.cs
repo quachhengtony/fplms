@@ -50,7 +50,7 @@ namespace Repositories
 
         public Task<Group> FindOneByIdAsync(int groupId)
         {
-            return dbContext.Groups.Where(g => g.Id == groupId && g.IsDisable == 0)
+            return dbContext.Groups.Where(g => g.Id == groupId)
                 .Include(g => g.Class).ThenInclude(cl => cl.SemesterCodeNavigation)
                 .Include(g => g.Project)
                 .Include(g => g.Meetings)
@@ -139,6 +139,13 @@ namespace Repositories
         public async Task<bool> ExistsById(int groupId)
         {
             return await dbContext.Groups.AnyAsync(g => g.Id == groupId);
+        }
+        public Task<Group> GetGroupIdByNumberAndClassIdAsync(int number, int classId)
+        {
+            return dbContext.Groups
+                .Where(g => g.Number == number && g.ClassId == classId && g.IsDisable == 0)
+                .FirstOrDefaultAsync();
+
         }
     }
 }

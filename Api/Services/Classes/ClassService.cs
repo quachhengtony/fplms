@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Api.Dto.Response;
 using Api.Dto.Shared;
@@ -42,23 +43,66 @@ namespace Api.Services.Classes
             _logger = logger;
         }
 
-        public Task<ResponseDto<object>> ChangeStudentGroupByLecturer(int classId, int studentId, int groupNumber, string lecturerEmail)
+        public async Task<ResponseDto<object>> ChangeStudentGroupByLecturer(int classId, int studentId, int groupNumber, string lecturerEmail)
         {
             _logger.LogInformation("Change student group: {}, {}", classId, studentId);
             //check if the class not of the lecturer
             if (_classRepo.FindLecturerEmailOfClassAsync(classId).Result != lecturerEmail)
             {
                 _logger.LogWarning("Change student group: {}", ServiceMessage.FORBIDDEN_MESSAGE);
-                return Task.FromResult(new ResponseDto<object> { code = ServiceStatusCode.FORBIDDEN_STATUS, message = ServiceMessage.FORBIDDEN_MESSAGE });
+                return new ResponseDto<object> { code = ServiceStatusCode.FORBIDDEN_STATUS, message = ServiceMessage.FORBIDDEN_MESSAGE };
             }
             if (_classRepo.ExistInClassAsync(studentId, classId).Result == 0) //exist
             {
                 _logger.LogWarning("Change student group: {}", ServiceMessage.ID_NOT_EXIST_MESSAGE);
-                return Task.FromResult(new ResponseDto<object> { code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.ID_NOT_EXIST_MESSAGE });
+                return new ResponseDto<object> { code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ServiceMessage.ID_NOT_EXIST_MESSAGE };
             }
-            _studentGroupRepo.UpdateStudentGroup(studentId, classId, groupNumber);
+            var group = await _groupRepo.GetGroupIdByNumberAndClassIdAsync(groupNumber, classId);
+            if (await _groupRepo.GetGroupLimitNumberAsync(group.Id) <= await _studentGroupRepo.GetCurrentNumberOfMemberInGroup(group.Id))
+            {
+                _logger.LogWarning("Add student to group: {}", "Group is full");
+                return new ResponseDto<object> { code = ServiceStatusCode.BAD_REQUEST_STATUS, message = "Group is full" };
+            }
+            if (_groupRepo.IsEnrollTimeOverAsync(group.Id, System.DateTime.Now).Result == 0)
+            {
+                _logger.LogWarning("Add student to group: {}", "Enroll time is over");
+                return new ResponseDto<object> { code = ServiceStatusCode.BAD_REQUEST_STATUS, message = "Enroll time is over" };
+            }
+            if(_studentGroupRepo.FindStudentLeaderRoleInClass(studentId,classId).Result == 1)
+            {
+                await ChangeGroupLeaderToRandomMember(studentId, classId);
+            }
+            await _studentGroupRepo.UpdateStudentGroup(studentId, classId, groupNumber);
             _logger.LogInformation("Change student group: {}", ServiceMessage.SUCCESS_MESSAGE);
-            return Task.FromResult(new ResponseDto<object> { code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE });
+            return new ResponseDto<object> { code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE };
+        }
+        public async Task ChangeGroupLeaderToRandomMember(int currentLeaderId, int classId)
+        {
+            // Find the groupId associated with the current leader
+            int groupId = await _studentGroupRepo.FindGroupIdByLeader(currentLeaderId,classId);
+
+            if (groupId == 0)
+            {
+                Console.WriteLine("The current leader is not associated with any group.");
+                return;
+            }
+
+            // Check if there is any other member in the group to become the new leader
+            int newLeaderId = await _studentGroupRepo.ChooseRandomGroupMember(groupId);
+            await _studentGroupRepo.UpdateGroupLeader(groupId, currentLeaderId, isLeader: 0);
+
+            if (newLeaderId == 0)
+            {
+                Console.WriteLine("There are no other members in the group to become the leader.");
+                return;
+            }
+
+            // Change the current leader to a regular group member
+
+            // Assign the new leader
+            await _studentGroupRepo.UpdateGroupLeader(groupId, newLeaderId, isLeader: 1);
+
+            Console.WriteLine("Group leader has been changed successfully.");
         }
 
         public Task<ResponseDto<int>> CreateClassByLecturer(ClassDto classDto, string lecturerEmail)
