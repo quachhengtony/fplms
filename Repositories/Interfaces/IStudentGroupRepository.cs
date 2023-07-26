@@ -20,5 +20,6 @@ namespace Repositories.Interfaces
         Task UpdateGroupLeader(int groupId, int studentId, int isLeader);
         Task<int> ChooseRandomGroupMember(int groupId);
         Task AddRandomGroupLeader(int groupId, int leaderId);
+        Task<int> FindGroupIdByLeader(int leaderId, int classId);
     }
 }

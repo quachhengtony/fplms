@@ -161,7 +161,7 @@ namespace Api.Services.Projects
                 return new ResponseDto<int>{ code = ServiceStatusCode.BAD_REQUEST_STATUS, message = SEMESTER_NOT_EXIST };
             }
             var project = MapToProject(ProjectDto);
-            project.Lecturer = await _lecturerRepository.FindOneByEmailAsync(userEmail);
+            project.LecturerId = lecturerId;
             int id = await _projectRepository.AddAsync(project);
             _logger.LogInformation("Add project success.");
             return new ResponseDto<int> { code = ServiceStatusCode.OK_STATUS, message = ServiceMessage.SUCCESS_MESSAGE, data = id };

@@ -19,7 +19,7 @@ namespace Api.Controllers
             _semesterService = semesterService;
         }
 
-        [HttpGet]
+        [HttpGet, Authorize(Roles = "Lecturer,Student,Admin")]
         public async Task<ActionResult<HashSet<SemesterDTO>>> GetSemester([FromQuery] string? code)
         {
             if (code == null)
@@ -28,21 +28,21 @@ namespace Api.Controllers
             return Ok(semesters);
         }
 
-        [HttpPost]
+        [HttpPost, Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddSemester([FromBody] SemesterDTO semesterDto)
         {
             await _semesterService.AddSemester(semesterDto);
             return NoContent();
         }
 
-        [HttpPut]
+        [HttpPut, Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateSemester([FromBody] SemesterDTO semesterDto)
         {
             await _semesterService.UpdateSemester(semesterDto);
             return NoContent();
         }
 
-        [HttpDelete("{code}")]
+        [HttpDelete("{code}"), Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteSemester(string code)
         {
             await _semesterService.DeleteSemester(code);

@@ -24,6 +24,7 @@ public class AuthController : ControllerBase
     private readonly ILogger<AuthController> _logger;
     private readonly IStudentRepository _studentRepository;
     private readonly ILecturerRepository _lecturerRepository;
+    private string adminEmail = "";
 
     public AuthController(IConfiguration config, IAuthService authService, ILogger<AuthController> logger, IStudentRepository studentRepository, ILecturerRepository lecturerRepository)
     {
@@ -104,6 +105,8 @@ public class AuthController : ControllerBase
                 role = RoleTypes.Lecturer;
             }
 
+            if (tokenPayload.Email.Equals(adminEmail))
+                role = RoleTypes.Admin;
             var token = _authService.CreateToken(tokenPayload, role);
 
             return Ok(new LoginResponseDto
@@ -120,6 +123,20 @@ public class AuthController : ControllerBase
                 Message = "Bad credentials.",
                 StatusCode = StatusCodes.Status400BadRequest
             });
+        }
+    }
+
+    [HttpGet]
+    public IActionResult CheckAdminRole()
+    {
+        if (HttpContext.Request.Headers.TryGetValue("userEmail", out var userEmail)
+            && userEmail.Equals(adminEmail))
+        {
+            return Ok(true);
+        }
+        else
+        {
+            return Ok(false);
         }
     }
 }

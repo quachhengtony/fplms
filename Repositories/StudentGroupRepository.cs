@@ -80,5 +80,13 @@ namespace Repositories
         {
             await dbContext.Database.ExecuteSqlRawAsync("UPDATE student_group SET is_leader = 1 WHERE GROUP_id = {0} AND STUDENT_id = {1}", groupId, leaderId);
         }
+        public async Task<int> FindGroupIdByLeader(int leaderId, int classId)
+        {
+            // Retrieve the group ID where the provided leader ID and class ID match.
+            var group = await dbContext.StudentGroups.FirstOrDefaultAsync(sg => sg.StudentId == leaderId && sg.ClassId == classId && sg.IsLeader == 1);
+
+            // If a group with the provided leader ID and class ID is found, return its GroupId. Otherwise, return 0.
+            return group?.GroupId ?? 0;
+        }
     }
 }
