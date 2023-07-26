@@ -47,5 +47,15 @@ namespace Repositories
         {
             return dbContext.Lecturers.AnyAsync(l => l.Id == lecturerId);
         }
+
+        public void Create(Lecturer lecturer)
+        {
+            dbContext.Lecturers.Add(lecturer);
+        }
+
+        public async Task SaveChanges()
+        {
+            await dbContext.SaveChangesAsync();
+        }
     }
 }

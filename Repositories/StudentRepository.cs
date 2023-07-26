@@ -45,5 +45,15 @@ namespace Repositories
         {
             return await dbContext.Students.AnyAsync(s => s.Id == studentId);
         }
+
+        public void Create(Student student)
+        {
+            dbContext.Students.Add(student);
+        }
+
+        public async Task SaveChanges()
+        {
+            await dbContext.SaveChangesAsync();
+        }
     }
 }
