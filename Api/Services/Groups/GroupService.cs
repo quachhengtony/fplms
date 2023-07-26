@@ -551,8 +551,8 @@ namespace Api.Services.Groups
                 _logger.LogWarning("Update group : {}", GROUP_DISABLE);
                 return Task.FromResult(new ResponseDto<object> { code = ServiceStatusCode.BAD_REQUEST_STATUS, message = GROUP_DISABLE });
             }
-            // not accept chane in the same group
-            if (groupNumber == groupDTO.Number)
+
+            if (groupNumber != groupDTO.Number && _groupRepo.GetGroupIdByNumberAndClassIdAsync(groupDTO.Number,classId).Result != null)
             {
                 _logger.LogWarning("Update group: {}", ServiceMessage.INVALID_ARGUMENT_MESSAGE);
                 return Task.FromResult(new ResponseDto<object> { code = ServiceStatusCode.BAD_REQUEST_STATUS, message = "Group number already exist" });
