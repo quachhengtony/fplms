@@ -21,6 +21,9 @@ using Api.Services.Reports;
 using Api.Services.Meetings;
 using Repositories.Interfaces;
 using Repositories;
+using System;
+using Repositories.Contracts;
+using Api.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,15 +41,18 @@ builder.Services.AddScoped<IMeetingService, MeetingService>();
 builder.Services.AddScoped<IClassRepository, ClassRepository>();
 builder.Services.AddScoped<ICycleReportRepository, CycleReportRepository>();
 builder.Services.AddScoped<IGroupRepository, GroupRepository>();
-builder.Services.AddScoped<ILecturerRepository, LecturerRepository>();
+builder.Services.AddScoped<Repositories.Interfaces.ILecturerRepository, Repositories.LecturerRepository>();
 builder.Services.AddScoped<IMeetingRepository, MeetingRepository>();
 builder.Services.AddScoped<IProgressReportRepository, ProgressReportRepository>();
 builder.Services.AddScoped<ISemesterRepository, SemesterRepository>();
-builder.Services.AddScoped<IStudentRepository, StudentRepository>();
+builder.Services.AddScoped<Repositories.Interfaces.IStudentRepository, Repositories.StudentRepository>();
 builder.Services.AddScoped<IStudentGroupRepository, StudentGroupRepository>();
-builder.Services.AddScoped<ISubjectRepository, SubjectRepository>();
+builder.Services.AddScoped<Repositories.Interfaces.ISubjectRepository, Repositories.SubjectRepository>();
 builder.Services.AddScoped<ISemesterRepository, SemesterRepository>();
 builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
+
+builder.Services.AddScoped<IRepositoryWrapper, RepositoryWrapper>();
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Services.AddScoped<ValidationFilterAttribute>();
 builder.Services.AddHttpLogging(options =>

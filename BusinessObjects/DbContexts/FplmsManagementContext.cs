@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using BusinessObjects.Models;
+﻿using BusinessObjects.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace BusinessObjects.DbContexts;
@@ -38,9 +36,16 @@ public partial class FplmsManagementContext : DbContext
 
     public virtual DbSet<Subject> Subjects { get; set; }
 
+    public virtual DbSet<Question> Questions { get; set; }
+
+    public virtual DbSet<Answer> Answers { get; set; }
+
+    public virtual DbSet<StudentAnswerUpvote> StudentAnswerUpvotes { get; set; }
+
+    public virtual DbSet<StudentUpvote> StudentUpvotes { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseMySQL("Server=localhost;Database=fplms_management;User=root;Password=Password1234;");
+        => optionsBuilder.UseMySQL("Server=localhost;Database=fplms;User=root;Password=Password1234;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -409,6 +414,28 @@ public partial class FplmsManagementContext : DbContext
                 .HasMaxLength(45)
                 .HasColumnName("name");
         });
+
+        modelBuilder.Entity<StudentUpvote>()
+               .HasKey(x => new { x.StudentId, x.QuestionId });
+        modelBuilder.Entity<StudentUpvote>()
+            .HasOne(pt => pt.Student)
+            .WithMany(p => p.UpvotedQuestions)
+            .HasForeignKey(pt => pt.StudentId);
+        modelBuilder.Entity<StudentUpvote>()
+            .HasOne(pt => pt.Question)
+            .WithMany(t => t.Upvoters)
+            .HasForeignKey(pt => pt.QuestionId);
+
+        modelBuilder.Entity<StudentAnswerUpvote>()
+            .HasKey(x => new { x.StudentId, x.AnswerId });
+        modelBuilder.Entity<StudentAnswerUpvote>()
+            .HasOne(pt => pt.Student)
+            .WithMany(p => p.UpvotedAnswers)
+            .HasForeignKey(pt => pt.StudentId);
+        modelBuilder.Entity<StudentAnswerUpvote>()
+            .HasOne(pt => pt.Answer)
+            .WithMany(t => t.Upvoters)
+            .HasForeignKey(pt => pt.AnswerId);
 
         OnModelCreatingPartial(modelBuilder);
     }

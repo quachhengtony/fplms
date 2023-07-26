@@ -10,7 +10,8 @@ namespace Repositories.Interfaces
 {
     public interface IStudentRepository
     {
-
+        public void Create(Student student);
+        public Task SaveChanges();
         public Task<Group> FindGroupByStudentIdAndClassId(int studentId, int classId);
         public Task<int> FindStudentIdByEmail(string email);
         public Task<Student> FindOneById(int studentId);

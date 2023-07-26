@@ -4,14 +4,11 @@ using Api.Services.Reports;
 using FPLMS.Api.Dto;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using System;
 using Api.Services.Students;
-using FPLMS.Api.Enum;
 using Microsoft.AspNetCore.Authorization;
-using System.Data;
-using static Google.Apis.Requests.BatchRequest;
+using Repositories.Enum;
 
 namespace Api.Controllers
 {
@@ -110,7 +107,7 @@ namespace Api.Controllers
         }
 
         [HttpPut("cycle-reports/feedback"), Authorize(Roles = "Lecturer")]
-        public async  Task<ActionResult<ResponseDto<CycleReportDTO>>> FeedbackCycleReport([FromBody] FeedbackCycleReportRequest feedbackCycleReportRequest)
+        public async Task<ActionResult<ResponseDto<CycleReportDTO>>> FeedbackCycleReport([FromBody] FeedbackCycleReportRequest feedbackCycleReportRequest)
         {
             var userEmail = (string)HttpContext.Items["userEmail"]!;
             ResponseDto<CycleReportDTO> response = await _reportService.FeedbackCycleReportAsync(feedbackCycleReportRequest, userEmail);

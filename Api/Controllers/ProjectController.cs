@@ -7,9 +7,8 @@ using Api.Services.Projects;
 using Api.Services.Groups;
 using Api.Services.Students;
 using FPLMS.Api.Dto;
-using FPLMS.Api.Enum;
 using Microsoft.AspNetCore.Authorization;
-using System.Data;
+using Repositories.Enum;
 
 namespace Api.Controllers
 {
