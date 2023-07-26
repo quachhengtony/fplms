@@ -10,7 +10,7 @@ namespace Api.Dto.Shared
         public bool IsJoin { get; set; }
         public DateTime EnrollTime { get; set; }
         public bool IsDisable { get; set; }
-        public ProjectDto ProjectDto { get; set; }
+        public ProjectDto? ProjectDto { get; set; }
 
     }
 }
