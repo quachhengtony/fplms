@@ -558,6 +558,13 @@ namespace Api.Services.Groups
                 return Task.FromResult(new ResponseDto<object> { code = ServiceStatusCode.BAD_REQUEST_STATUS, message = "Group number already exist" });
             }
 
+            if (groupDTO.EnrollTime <= System.DateTime.Now)
+            {
+                _logger.LogWarning("Create group : {}", ServiceMessage.INVALID_ARGUMENT_MESSAGE);
+                return Task.FromResult(new ResponseDto<object> { code = ServiceStatusCode.BAD_REQUEST_STATUS, message = ENROLL_TIME_BEFORE_NOW_MESSAGE });
+            }
+
+
             Group group = _groupRepo.FindOneByIdAsync(groupDTO.Id).Result;
             group.Number = groupDTO.Number;
             group.MemberQuantity = groupDTO.MemberQuantity;
